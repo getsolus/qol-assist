@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <sys/types.h>
 
 /**
@@ -37,6 +38,14 @@ typedef struct QolUserManager {
  * @returns Newly allocated QolUserManager
  */
 QolUserManager *qol_user_manager_new(void);
+
+/**
+ * Attempt to refresh the manager state with the users
+ *
+ * @param manager Pointer to an allocated QolUserManager
+ * @returns True if the operation succeeded
+ */
+bool qol_user_manager_refresh(QolUserManager *manager);
 
 /**
  * Free a previously allocated QolUserManager

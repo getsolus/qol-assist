@@ -11,6 +11,7 @@
 
 #define _GNU_SOURCE
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "user-manager.h"
@@ -24,6 +25,13 @@ QolUserManager *qol_user_manager_new(void)
 
         ret = calloc(1, sizeof(QolUserManager));
         if (!ret) {
+                fputs("OOM\n", stderr);
+                return NULL;
+        }
+
+        /* Attempt to load the manager for the first time */
+        if (!qol_user_manager_refresh(ret)) {
+                qol_user_manager_free(ret);
                 return NULL;
         }
 
@@ -40,6 +48,12 @@ void qol_user_manager_free(QolUserManager *self)
         free(self);
 }
 
+bool qol_user_manager_refresh(QolUserManager *self)
+{
+        /* We should do something here but oh noes */
+        return false;
+}
+
 /**
  * Construct a new QolUser
  *
@@ -51,6 +65,7 @@ QolUser *qol_user_new()
 
         ret = calloc(1, sizeof(QolUser));
         if (!ret) {
+                fputs("OOM\n", stderr);
                 return NULL;
         }
 

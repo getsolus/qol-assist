@@ -22,7 +22,7 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         manager = qol_user_manager_new();
         if (!manager) {
-                fputs("OOM\n", stderr);
+                fputs("Cannot get the system users!\n", stderr);
                 return EXIT_FAILURE;
         }
 
