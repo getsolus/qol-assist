@@ -11,8 +11,24 @@
 
 #pragma once
 
+#include <sys/types.h>
+
+/**
+ * QolUser represents a system user in an accessible fashion.
+ */
+typedef struct QolUser {
+        struct QolUser *next; /**<Next user in the chain */
+
+        char *name; /**<Username */
+        uid_t uid;  /**<User ID */
+        gid_t gid;  /**<Primary group ID */
+} QolUser;
+
+/**
+ * QolUserManager allows us to introspect the system users and modify them
+ */
 typedef struct QolUserManager {
-        int __reserved1;
+        QolUser *users; /**<Known users */
 } QolUserManager;
 
 /**

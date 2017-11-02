@@ -15,6 +15,9 @@
 
 #include "user-manager.h"
 
+static void qol_user_free(QolUser *user);
+static QolUser *qol_user_new(void);
+
 QolUserManager *qol_user_manager_new(void)
 {
         QolUserManager *ret = NULL;
@@ -33,7 +36,46 @@ void qol_user_manager_free(QolUserManager *self)
         if (!self) {
                 return;
         }
+        qol_user_free(self->users);
         free(self);
+}
+
+/**
+ * Construct a new QolUser
+ *
+ * TODO: Actually construct this guy using pwent stuff
+ */
+QolUser *qol_user_new()
+{
+        QolUser *ret = NULL;
+
+        ret = calloc(1, sizeof(QolUser));
+        if (!ret) {
+                return NULL;
+        }
+
+        /* TODO: Init user */
+        return ret;
+}
+
+/**
+ * Delete a QolUser and forward it along the chain
+ */
+static void qol_user_free(QolUser *user)
+{
+        if (!user) {
+                return;
+        }
+
+        /* Chain to the next guy */
+        if (user->next) {
+                qol_user_free(user->next);
+        }
+
+        if (user->name) {
+                free(user->name);
+        }
+        free(user);
 }
 
 /*
