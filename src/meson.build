@@ -1,5 +1,6 @@
 qol_assist_sources = [
     'main.c',
+    'user-manager.c',
 ]
 
 # Build main qol-assist binary

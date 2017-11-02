@@ -9,28 +9,31 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 
 #include "user-manager.h"
 
-#define __qol_unused__ __attribute__((unused))
-
-int main(__qol_unused__ int argc, __qol_unused__ char **argv)
+QolUserManager *qol_user_manager_new(void)
 {
-        QolUserManager *manager = NULL;
+        QolUserManager *ret = NULL;
 
-        manager = qol_user_manager_new();
-        if (!manager) {
-                fputs("OOM\n", stderr);
-                return EXIT_FAILURE;
+        ret = calloc(1, sizeof(QolUserManager));
+        if (!ret) {
+                return NULL;
         }
 
-        fprintf(stderr, "Not yet implemented\n");
+        /* TODO: Init the user manager */
+        return ret;
+}
 
-        qol_user_manager_free(manager);
-
-        return EXIT_FAILURE;
+void qol_user_manager_free(QolUserManager *self)
+{
+        if (!self) {
+                return;
+        }
+        free(self);
 }
 
 /*

@@ -9,29 +9,25 @@
  * (at your option) any later version.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#pragma once
 
-#include "user-manager.h"
+typedef struct QolUserManager {
+        int __reserved1;
+} QolUserManager;
 
-#define __qol_unused__ __attribute__((unused))
+/**
+ * Create a new QolUserManager to handle system user management
+ *
+ * @returns Newly allocated QolUserManager
+ */
+QolUserManager *qol_user_manager_new(void);
 
-int main(__qol_unused__ int argc, __qol_unused__ char **argv)
-{
-        QolUserManager *manager = NULL;
-
-        manager = qol_user_manager_new();
-        if (!manager) {
-                fputs("OOM\n", stderr);
-                return EXIT_FAILURE;
-        }
-
-        fprintf(stderr, "Not yet implemented\n");
-
-        qol_user_manager_free(manager);
-
-        return EXIT_FAILURE;
-}
+/**
+ * Free a previously allocated QolUserManager
+ *
+ * @param manager Pointer to an allocated QolUserManager
+ */
+void qol_user_manager_free(QolUserManager *manager);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
