@@ -11,13 +11,15 @@
 
 #define _GNU_SOURCE
 
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "user-manager.h"
 
 static void qol_user_free(QolUser *user);
-static QolUser *qol_user_new(void);
+static QolUser *qol_user_new(struct passwd *pwd);
 
 QolUserManager *qol_user_manager_new(void)
 {
@@ -50,8 +52,34 @@ void qol_user_manager_free(QolUserManager *self)
 
 bool qol_user_manager_refresh(QolUserManager *self)
 {
-        /* We should do something here but oh noes */
-        return false;
+        struct passwd *pwd = NULL;
+        QolUser *root_user = NULL;
+        bool ret = false;
+
+        setpwent();
+
+        while ((pwd = getpwent()) != NULL) {
+                QolUser *user = NULL;
+
+                user = qol_user_new(pwd);
+                if (!user) {
+                        goto end;
+                }
+
+                /* Merge list */
+                user->next = root_user;
+                root_user = user;
+        }
+
+        /* Ensure we don't have any existing users now */
+        qol_user_free(self->users);
+        self->users = root_user;
+        ret = true;
+
+end:
+        endpwent();
+
+        return ret;
 }
 
 /**
@@ -59,7 +87,7 @@ bool qol_user_manager_refresh(QolUserManager *self)
  *
  * TODO: Actually construct this guy using pwent stuff
  */
-QolUser *qol_user_new()
+QolUser *qol_user_new(struct passwd *pwd)
 {
         QolUser *ret = NULL;
 
@@ -69,8 +97,17 @@ QolUser *qol_user_new()
                 return NULL;
         }
 
-        /* TODO: Init user */
+        /* TODO: Init user fully */
+        ret->name = strdup(pwd->pw_name);
+        if (!ret->name) {
+                goto failed;
+        }
+
         return ret;
+
+failed:
+        qol_user_free(ret);
+        return NULL;
 }
 
 /**

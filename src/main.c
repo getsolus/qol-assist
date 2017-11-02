@@ -19,6 +19,7 @@
 int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         QolUserManager *manager = NULL;
+        QolUser *user = NULL;
 
         manager = qol_user_manager_new();
         if (!manager) {
@@ -26,7 +27,12 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                 return EXIT_FAILURE;
         }
 
-        fprintf(stderr, "Not yet implemented\n");
+        fprintf(stderr, "Not yet fully implemented\n");
+
+        /* Wind the user list in reverse */
+        for (user = manager->users; user; user = user->next) {
+                fprintf(stdout, "User: %s\n", user->name);
+        }
 
         qol_user_manager_free(manager);
 
