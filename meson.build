@@ -37,7 +37,7 @@ add_global_arguments(am_cflags, language: 'c')
 path_prefix = get_option('prefix')
 path_sysconfdir = join_paths(path_prefix, get_option('sysconfdir'))
 path_datadir = join_paths(path_prefix, get_option('datadir'))
-path_bindir = join_paths(path_prefix, get_option('bindir'))
+path_sbindir = join_paths(path_prefix, get_option('sbindir'))
 
 # Sort out config.h now
 cdata = configuration_data()
@@ -63,7 +63,7 @@ report = [
     '    prefix:                                 @0@'.format(path_prefix),
     '    datadir:                                @0@'.format(path_datadir),
     '    sysconfdir:                             @0@'.format(path_sysconfdir),
-    '    bindir:                                 @0@'.format(path_bindir),
+    '    sbindir:                                @0@'.format(path_sbindir),
 ]
 
 # Output some stuff to validate the build config
