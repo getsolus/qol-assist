@@ -52,21 +52,21 @@ static size_t n_migrations = sizeof(migration_table) / sizeof(migration_table[0]
  */
 static bool qol_get_migration_level(int *level)
 {
-        const char *trigger_file = QOL_TRIGGER_FILE;
+        const char *status_file = QOL_STATUS_FILE;
         FILE *f = NULL;
         int lvl = 0;
 
-        if (!qol_file_exists(trigger_file)) {
+        if (!qol_file_exists(status_file)) {
                 *level = 0;
                 return true;
         }
 
         /* Something super janky. */
-        f = fopen(trigger_file, "r");
+        f = fopen(status_file, "r");
         if (!f) {
                 fprintf(stderr,
                         "Failed to read migration file %s: %s\n",
-                        trigger_file,
+                        status_file,
                         strerror(errno));
                 return false;
         }
@@ -74,6 +74,9 @@ static bool qol_get_migration_level(int *level)
         if (fscanf(f, "%d\n", &lvl) != 1) {
                 fprintf(stderr, "Failed to parse migration level. Setting to 0\n");
                 lvl = 0;
+        } else {
+                /* We have a valid migration level, so start 1 higher */
+                ++lvl;
         }
         fclose(f);
 
@@ -91,7 +94,7 @@ static bool qol_get_migration_level(int *level)
  */
 static bool qol_set_migration_level(int level)
 {
-        const char *trigger_file = QOL_TRIGGER_FILE;
+        const char *status_file = QOL_STATUS_FILE;
         const char *trigger_dir = QOL_TRACK_DIR;
         FILE *f = NULL;
         bool ret = false;
@@ -107,20 +110,20 @@ static bool qol_set_migration_level(int level)
                 }
         }
 
-        if (qol_file_exists(trigger_file) && unlink(trigger_file) < 0) {
+        if (qol_file_exists(status_file) && unlink(status_file) < 0) {
                 fprintf(stderr,
                         "Failed to remove old trigger file %s: %s\n",
-                        trigger_file,
+                        status_file,
                         strerror(errno));
                 return false;
         }
 
         /* Something super janky. */
-        f = fopen(trigger_file, "w");
+        f = fopen(status_file, "w");
         if (!f) {
                 fprintf(stderr,
                         "Failed to open migration file %s: %s\n",
-                        trigger_file,
+                        status_file,
                         strerror(errno));
                 return false;
         }
@@ -128,12 +131,15 @@ static bool qol_set_migration_level(int level)
         if (fprintf(f, "%d\n", level) < 0) {
                 fprintf(stderr,
                         "Failed to write migration level to %s: %s\n",
-                        trigger_file,
+                        status_file,
                         strerror(errno));
         } else {
                 ret = true;
         }
+        fflush(f);
         fclose(f);
+
+        fprintf(stderr, "File written?! %s\n", status_file);
         return ret;
 }
 
@@ -144,6 +150,7 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
         int start_level = 0;
         bool ret = false;
         const char *trigger_file = QOL_TRIGGER_FILE;
+        int n_migration_performed = 0;
 
         if (!qol_get_migration_level(&start_level)) {
                 fprintf(stderr, "Cannot begin migration, file a bug to %s\n", PACKAGE_BUG_TRACKER);
@@ -187,6 +194,13 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
                                 PACKAGE_BUG_TRACKER);
                         goto end;
                 }
+                ++n_migration_performed;
+        }
+
+        if (n_migration_performed > 0) {
+                fprintf(stdout, "Performed %d migrations\n", n_migration_performed);
+        } else {
+                fputs("No migrations required\n", stdout);
         }
 
         /* Ensure the trigger file is actually there */
