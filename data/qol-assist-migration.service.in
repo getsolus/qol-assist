@@ -1,6 +1,6 @@
 [Unit]
 Description=QoL Migration Service
-ConditionPathExists=@QOL_STATUS_FILE@
+ConditionPathExists=@QOL_TRIGGER_FILE@
 After=systemd-sysusers.service
 
 [Service]
