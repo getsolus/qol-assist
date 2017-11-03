@@ -109,6 +109,10 @@ static bool qol_user_assign_groups(QolUser *user)
                 }
                 /* Reallocate the buffer, try again */
                 groups = realloc(groups, ((size_t)n_groups) * sizeof(gid_t));
+                if (!groups) {
+                        fputs("OOM\n", stderr);
+                        goto failed;
+                }
                 r = getgrouplist(user->name, user->gid, groups, &n_groups);
                 if (r < 0) {
                         goto failed;
