@@ -76,6 +76,12 @@ static bool qol_get_migration_level(int *level)
                 lvl = 0;
         }
         fclose(f);
+
+        /* Make sure someone doesn't dick us over with a malformed file */
+        if (lvl < 0) {
+                lvl = 0;
+        }
+
         *level = lvl;
         return true;
 }
