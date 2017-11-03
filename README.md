@@ -18,9 +18,9 @@ need, but it will grow in time to be an agnostic project suitable outside of Sol
 
 ## Initial TODO
 
- - Add APIs to inspect active users (and differentiate admin via wheel/sudo group)
- - Add migration level tracking (`atoi` a file and write it again)
- - Initially support migration of admin users to `plugdev` and `scanner`
+ - [x] Add APIs to inspect active users (and differentiate admin via wheel/sudo group)
+ - [ ] Add migration level tracking (`atoi` a file and write it again)
+ - [ ] Initially support migration of admin users to `plugdev` and `scanner`
 
 ## Authors
 
