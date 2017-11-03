@@ -22,23 +22,7 @@
  */
 bool qol_migration_01_scanner_group(QolContext *context, int level)
 {
-        for (QolUser *user = context->user_manager->users; user; user = user->next) {
-                if (!qol_user_is_active(user) || !qol_user_is_admin(user)) {
-                        continue;
-                }
-                if (qol_user_in_group(user, WANTED_GROUP)) {
-                        continue;
-                }
-                fprintf(stderr, " -> Adding '%s' to '%s'\n", user->name, WANTED_GROUP);
-                if (!qol_user_add_to_group(user, WANTED_GROUP)) {
-                        fprintf(stderr,
-                                "Failed to add user '%s' to group '%s'\n",
-                                user->name,
-                                WANTED_GROUP);
-                        return false;
-                }
-        }
-        return true;
+        return qol_migration_push_active_admin_group(context, "scanner");
 }
 
 /*

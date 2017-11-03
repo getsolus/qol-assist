@@ -13,6 +13,18 @@
 
 #include "../migrate.h"
 
+/**
+ * Add any active admins to the specified group if they're not in it already
+ *
+ * @param context Pointer to a valid QolContext
+ * @param group Name of the group for the users to join
+ *
+ * @returns True if the operation succeeded
+ */
+bool qol_migration_push_active_admin_group(QolContext *context, const char *group);
+
+/* Migrations follow */
+
 bool qol_migration_01_scanner_group(QolContext *context, int level);
 
 /*
