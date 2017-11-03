@@ -25,7 +25,7 @@ bool qol_migration_push_active_admin_group(QolContext *context, const char *grou
 
 /* Migrations follow */
 
-bool qol_migration_01_scanner_group(QolContext *context, int level);
+bool qol_migration_01_scanner_group(QolContext *context);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html

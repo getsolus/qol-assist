@@ -70,7 +70,7 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
                 QolMigration *m = &migration_table[i];
 
                 fprintf(stdout, "Begin migration %lu: '%s'\n", i, m->name);
-                if (!m->func(context, (int)i)) {
+                if (!m->func(context)) {
                         fprintf(stderr, "Failed migration %lu: '%s'\n", i, m->name);
                         goto end;
                 }

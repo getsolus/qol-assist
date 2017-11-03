@@ -45,7 +45,7 @@ void qol_context_free(QolContext *context);
  * If a migration func returns true, we'll bump the migration level, otherwise
  * it is considered a migration error.
  */
-typedef bool (*qol_migration_func)(QolContext *context, int level);
+typedef bool (*qol_migration_func)(QolContext *context);
 
 /**
  * Helps to describe a QolMigration for logging purposes

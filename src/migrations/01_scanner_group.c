@@ -20,7 +20,7 @@
 /**
  * Add all active/admin users into the scanner group
  */
-bool qol_migration_01_scanner_group(QolContext *context, int level)
+bool qol_migration_01_scanner_group(QolContext *context)
 {
         return qol_migration_push_active_admin_group(context, "scanner");
 }
