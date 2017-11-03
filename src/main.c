@@ -34,6 +34,10 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                 if (!user->valid_shell) {
                         continue;
                 }
+                /* TODO: Make an option! */
+                if (user->uid < 1000) {
+                        continue;
+                }
                 fprintf(stdout, "User: %s (", user->name);
                 for (size_t i = 0; i < user->n_groups; i++) {
                         fprintf(stdout,
