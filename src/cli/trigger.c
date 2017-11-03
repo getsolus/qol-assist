@@ -39,6 +39,11 @@ bool qol_cli_trigger(__qol_unused__ int argc, __qol_unused__ char **argv)
         const char *trigger_dir = QOL_TRACK_DIR;
         const char *trigger_file = QOL_TRIGGER_FILE;
 
+        if (geteuid() != 0 || getegid() != 0) {
+                fprintf(stderr, "This command must be run with root privileges.\n");
+                return false;
+        }
+
         /* Make sure trigger directory exists */
         if (!qol_file_exists(trigger_dir)) {
                 if (mkdir(trigger_dir, 00755) != 0) {

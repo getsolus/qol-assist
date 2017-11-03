@@ -49,6 +49,11 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
         bool ret = false;
         const char *trigger_file = QOL_TRIGGER_FILE;
 
+        if (geteuid() != 0 || getegid() != 0) {
+                fprintf(stderr, "This command must be run with root privileges.\n");
+                return false;
+        }
+
         /* Make sure the trigger is actually there. */
         if (!qol_file_exists(trigger_file)) {
                 fprintf(stderr, "Refusing to run migration without trigger file\n");
