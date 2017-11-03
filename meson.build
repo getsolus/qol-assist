@@ -9,6 +9,7 @@ project(
         'c_std=c11',
         'prefix=/usr',
         'sysconfdir=/etc',
+        'localstatedir=/var',
     ],
 )
 
@@ -38,6 +39,7 @@ path_prefix = get_option('prefix')
 path_sysconfdir = join_paths(path_prefix, get_option('sysconfdir'))
 path_datadir = join_paths(path_prefix, get_option('datadir'))
 path_sbindir = join_paths(path_prefix, get_option('sbindir'))
+path_vardir = join_paths(path_prefix, get_option('localstatedir'), 'lib', meson.project_name())
 
 # Sort out config.h now
 cdata = configuration_data()
@@ -46,6 +48,16 @@ cdata = configuration_data()
 cdata.set_quoted('PACKAGE_NAME', meson.project_name())
 cdata.set_quoted('PACKAGE_VERSION', meson.project_version())
 cdata.set_quoted('PACKAGE_URL', 'https://solus-project.com')
+
+# Tracking files
+cdata.set_quoted('QOL_TRACK_DIR', path_vardir)
+
+with_trigger_file = join_paths(path_vardir, 'trigger')
+with_status_file = join_paths(path_vardir, 'status')
+
+cdata.set_quoted('QOL_STATUS_FILE', with_status_file)
+cdata.set_quoted('QOL_TRIGGER_FILE', with_trigger_file)
+
 
 # If the uid isn't provided as a number, the build will freak out.
 with_minimum_uid = get_option('with-minimum-uid').to_int()
@@ -73,6 +85,10 @@ report = [
     '    datadir:                                @0@'.format(path_datadir),
     '    sysconfdir:                             @0@'.format(path_sysconfdir),
     '    sbindir:                                @0@'.format(path_sbindir),
+    '',
+    '    tracking directory:                     @0@'.format(path_vardir),
+    '    trigger file:                           @0@'.format(with_trigger_file),
+    '    status file:                            @0@'.format(with_status_file),
     '',
     '    minimum UID for non system user:        @0@'.format(with_minimum_uid),
     '    wheel (sudo) group name:                @0@'.format(with_wheel_group),
