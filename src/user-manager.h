@@ -85,6 +85,8 @@ bool qol_user_in_group(QolUser *user, const char *group);
  * Determine if this user has admin capabilities
  *
  * @note Admin means root user, or membership of the wheel (sudo) group
+ *
+ * @returns True if the user is considered an admin
  */
 bool qol_user_is_admin(QolUser *user);
 

@@ -42,7 +42,6 @@ QolUserManager *qol_user_manager_new(void)
                 return NULL;
         }
 
-        /* TODO: Init the user manager */
         return ret;
 }
 
@@ -195,8 +194,6 @@ failed:
 
 /**
  * Construct a new QolUser
- *
- * TODO: Actually construct this guy using pwent stuff
  */
 QolUser *qol_user_new(struct passwd *pwd)
 {
@@ -210,8 +207,6 @@ QolUser *qol_user_new(struct passwd *pwd)
 
         ret->uid = pwd->pw_uid;
         ret->gid = pwd->pw_gid;
-
-        /* TODO: Init user fully */
         ret->name = strdup(pwd->pw_name);
         if (!ret->name) {
                 goto failed;
