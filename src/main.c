@@ -46,14 +46,11 @@ static size_t n_migrations = sizeof(migration_table) / sizeof(migration_table[0]
  */
 typedef struct SubCommand {
         const char *name; /**<Name of this subcommand */
-        bool (*execute)(void);
+        bool (*execute)(int argc, char **argv);
         const char *short_desc; /**<Short description to display */
 } SubCommand;
 
-/**
- * Dummy code to validate the user management API
- */
-static bool list_users(void)
+static bool list_users_internal(bool require_admin, bool require_active, bool require_system)
 {
         QolContext *context = NULL;
         QolUser *user = NULL;
@@ -66,7 +63,13 @@ static bool list_users(void)
 
         /* Wind the user list in reverse */
         for (user = context->user_manager->users; user; user = user->next) {
-                if (!qol_user_is_admin(user) || !qol_user_is_active(user)) {
+                if (require_admin && !qol_user_is_admin(user)) {
+                        continue;
+                }
+                if (require_active && !qol_user_is_active(user)) {
+                        continue;
+                }
+                if (require_system && qol_user_is_active(user)) {
                         continue;
                 }
                 fprintf(stdout, "User: %s (", user->name);
@@ -83,7 +86,58 @@ static bool list_users(void)
         return true;
 }
 
-static bool perform_migration(void)
+static bool list_all_users(void)
+{
+        return list_users_internal(false, false, false);
+}
+
+static bool list_system_users(void)
+{
+        return list_users_internal(false, false, true);
+}
+
+/**
+ * List all normal users on the system
+ */
+static bool list_users(void)
+{
+        return list_users_internal(false, true, false);
+}
+
+/**
+ * List all admin users on the system
+ */
+static bool list_admins(void)
+{
+        return list_users_internal(true, true, false);
+}
+
+static bool list_users_entry(int argc, char **argv)
+{
+        const char *t = NULL;
+
+        if (argc != 1) {
+                fprintf(stderr, "usage: list-users [system|all|admin|active]\n");
+                return false;
+        }
+
+        t = argv[0];
+
+        if (strcmp(t, "system") == 0) {
+                return list_system_users();
+        } else if (strcmp(t, "all") == 0) {
+                return list_all_users();
+        } else if (strcmp(t, "admin") == 0) {
+                return list_admins();
+        } else if (strcmp(t, "active") == 0) {
+                return list_users();
+        }
+
+        fprintf(stderr, "Unknown type: %s\n", t);
+        return false;
+}
+
+static bool perform_migration(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         QolContext *context = NULL;
         size_t migration_level_start = 0;
@@ -119,7 +173,7 @@ end:
         return ret;
 }
 
-static bool print_version(void)
+static bool print_version(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         fputs(PACKAGE_NAME " version " PACKAGE_VERSION "\n\n", stdout);
         fputs("Copyright © 2017 Solus Project\n\n", stdout);
@@ -138,7 +192,7 @@ the Free Software Foundation; either version 2 of the License, or\n\
  * Our known commands
  */
 SubCommand command_table[] = {
-        { "list-admin", list_users, "List administrative users on the system" },
+        { "list-users", list_users_entry, "List users on the system" },
         { "migrate", perform_migration, "Perform migration functions" },
         { "help", NULL, "Print this help message" },
         { "version", print_version, "Print the program version and exit" },
@@ -159,13 +213,17 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         const char *subcommand = NULL;
         SubCommand *command = NULL;
+        const char *binname = argv[0];
 
-        if (argc != 2) {
+        if (argc < 2) {
                 print_usage(argv[0]);
                 return EXIT_FAILURE;
         }
 
-        subcommand = argv[1];
+        --argc;
+        ++argv;
+
+        subcommand = argv[0];
         for (size_t i = 0; i < ARRAY_SIZE(command_table); i++) {
                 SubCommand *c = &command_table[i];
                 if (strcmp(c->name, subcommand) == 0) {
@@ -176,16 +234,19 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         if (!command) {
                 fprintf(stderr, "Unknown command '%s'\n", subcommand);
-                print_usage(argv[0]);
+                print_usage(binname);
                 return EXIT_FAILURE;
         }
 
-        if (command->execute && command->execute()) {
+        --argc;
+        ++argv;
+
+        if (command->execute && command->execute(argc, argv)) {
                 return EXIT_SUCCESS;
         }
 
         if (strcmp(command->name, "help") == 0 && !command->execute) {
-                print_usage(argv[0]);
+                print_usage(binname);
                 return EXIT_SUCCESS;
         }
 
