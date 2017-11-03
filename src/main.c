@@ -34,6 +34,9 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                 if (!qol_user_is_active(user)) {
                         continue;
                 }
+                if (!qol_user_in_group(user, "sudo")) {
+                        continue;
+                }
                 fprintf(stdout, "User: %s (", user->name);
                 for (size_t i = 0; i < user->n_groups; i++) {
                         fprintf(stdout,

@@ -64,8 +64,22 @@ void qol_user_manager_free(QolUserManager *manager);
 
 /**
  * Determine if this is an "active" user, i.e. not a system user
+ *
+ * @param user Pointer to an allocated user
+ *
+ * @returns True if the user is considered "active"
  */
 bool qol_user_is_active(QolUser *user);
+
+/**
+ * Determine if the user is in a group
+ *
+ * @param user Pointer to allocated user
+ * @param group The group to test for membership
+ *
+ * @returns True if the user is a member of the named group
+ */
+bool qol_user_in_group(QolUser *user, const char *group);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html

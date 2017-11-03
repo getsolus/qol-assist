@@ -254,13 +254,28 @@ static void qol_user_free(QolUser *user)
 /**
  * Simple detection: is the shell valid, and is the UID high enough.
  */
-bool qol_user_is_active(QolUser *user)
+bool qol_user_is_active(QolUser *self)
 {
-        if (!user) {
+        if (!self) {
                 return false;
         }
-        if (user->uid >= QOL_MIN_UID && user->valid_shell) {
+        if (self->uid >= QOL_MIN_UID && self->valid_shell) {
                 return true;
+        }
+        return false;
+}
+
+bool qol_user_in_group(QolUser *self, const char *group)
+{
+        if (!self) {
+                return false;
+        }
+
+        /* Walk groups and check membership */
+        for (size_t i = 0; i < self->n_groups; i++) {
+                if (strcmp(self->groups[i], group) == 0) {
+                        return true;
+                }
         }
         return false;
 }
