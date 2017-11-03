@@ -16,8 +16,6 @@ foreach migration : migrations
     qol_assist_sources += 'migrations/@0@.c'.format(migration)
 endforeach
 
-
-
 # Build main qol-assist binary
 qol_assist = executable(
     'qol-assist',
