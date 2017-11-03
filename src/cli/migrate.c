@@ -138,8 +138,6 @@ static bool qol_set_migration_level(int level)
         }
         fflush(f);
         fclose(f);
-
-        fprintf(stderr, "File written?! %s\n", status_file);
         return ret;
 }
 
