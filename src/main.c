@@ -27,8 +27,6 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                 return EXIT_FAILURE;
         }
 
-        fprintf(stderr, "Not yet fully implemented\n");
-
         /* Wind the user list in reverse */
         for (user = manager->users; user; user = user->next) {
                 if (!qol_user_is_admin(user) || !qol_user_is_active(user)) {
@@ -46,7 +44,7 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         qol_user_manager_free(manager);
 
-        return EXIT_FAILURE;
+        return EXIT_SUCCESS;
 }
 
 /*
