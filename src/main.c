@@ -79,6 +79,7 @@ static bool list_users(void)
                 }
         }
 
+        qol_context_free(context);
         return true;
 }
 
