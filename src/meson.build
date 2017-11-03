@@ -5,6 +5,19 @@ qol_assist_sources = [
     'util.c',
 ]
 
+# Allow clean definition of migrations
+
+migrations = [
+    '01_initial_groups',
+]
+
+# Insert into sources
+foreach migration : migrations
+    qol_assist_sources += 'migrations/@0@.c'.format(migration)
+endforeach
+
+
+
 # Build main qol-assist binary
 qol_assist = executable(
     'qol-assist',

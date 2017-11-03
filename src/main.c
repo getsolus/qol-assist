@@ -18,17 +18,18 @@
 #include "user-manager.h"
 #include "util.h"
 
-static bool dummy_func(__qol_unused__ QolContext *context, int level)
-{
-        fprintf(stderr, "> Ermagahd i migrated (%d)\n", level);
-        return true;
-}
+#include "migrations/declared.h"
+
+#define MIGRATION(x, y)                                                                            \
+        {                                                                                          \
+                x, qol_migration_##y                                                               \
+        }
 
 /**
- * TODO: Actually populate this dude with migration functions
+ * Simple table describing all of our potential migrations
  */
 static QolMigration migration_table[] = {
-        { "Test of migration system", dummy_func },
+        MIGRATION("Ensure inclusion of plugdev/scanner", 01_initial_groups),
 };
 
 /**
