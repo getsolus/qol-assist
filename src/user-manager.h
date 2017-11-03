@@ -90,6 +90,18 @@ bool qol_user_in_group(QolUser *user, const char *group);
  */
 bool qol_user_is_admin(QolUser *user);
 
+/**
+ * Attempt to add the given user to the named group
+ *
+ * @note This will cause the user groups to refresh upon success
+ *
+ * @param user Pointer to an allocated user
+ * @param group Name of the group to add the user to
+ *
+ * @returns True if the user was added to the group
+ */
+bool qol_user_add_to_group(QolUser *self, const char *group);
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <sys/types.h>
 
 #define __qol_unused__ __attribute__((unused))
@@ -32,6 +33,15 @@ char **qol_get_shells(size_t *n_shells);
  * @param n_str Number of entries in the list
  */
 void qol_free_stringv(char **strv, size_t n_str);
+
+/**
+ * Fork and execute the given command
+ *
+ * @param command NULL terminated string array
+ *
+ * @returns True if the command succeeded
+ */
+bool qol_exec_command(char **command);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html

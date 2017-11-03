@@ -124,6 +124,8 @@ static bool qol_user_assign_groups(QolUser *user)
         int n_groups = 5; /* Try just 5 groups at first */
         int r = -1;
         bool ret = false;
+        size_t out_n_groups = 0;
+        char **out_groups = NULL;
 
         groups = calloc((size_t)n_groups, sizeof(gid_t));
         if (!groups) {
@@ -151,10 +153,10 @@ static bool qol_user_assign_groups(QolUser *user)
         }
 
         /* Set up storage for the groups */
-        user->n_groups = (size_t)n_groups;
-        user->groups = calloc(user->n_groups, sizeof(char *));
+        out_n_groups = (size_t)n_groups;
+        out_groups = calloc(out_n_groups, sizeof(char *));
 
-        if (!user->groups) {
+        if (!out_groups) {
                 goto failed;
         }
 
@@ -180,8 +182,13 @@ static bool qol_user_assign_groups(QolUser *user)
                         fputs("OOM\n", stderr);
                         goto failed;
                 }
-                user->groups[i] = cp;
+                out_groups[i] = cp;
         }
+
+        /* We may be called to refresh */
+        qol_free_stringv(user->groups, user->n_groups);
+        user->n_groups = out_n_groups;
+        user->groups = out_groups;
 
         ret = true;
 
@@ -293,6 +300,34 @@ bool qol_user_is_admin(QolUser *self)
 
         /* Not admin. */
         return false;
+}
+
+bool qol_user_add_to_group(QolUser *self, const char *group)
+{
+        char *command[] = {
+                "/usr/sbin/usermod", /** TODO: Perhaps configure option */
+                "-a",
+                "-G",
+                (char *)group,
+                self->name,
+                NULL,
+        };
+
+        if (!qol_exec_command(command)) {
+                return false;
+        }
+
+        /* Rebuild groups */
+        if (!qol_user_assign_groups(self)) {
+                return false;
+        }
+
+        /* Ensure we're really in the group now */
+        if (!qol_user_in_group(self, group)) {
+                return false;
+        }
+
+        return true;
 }
 
 /*
