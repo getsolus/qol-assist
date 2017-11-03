@@ -17,6 +17,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "cli.h"
 #include "config.h"
 #include "migrate.h"
 #include "user-manager.h"
@@ -40,102 +41,6 @@ static QolMigration migration_table[] = {
  * Track the maximum number of migrations available
  */
 static size_t n_migrations = sizeof(migration_table) / sizeof(migration_table[0]);
-
-/**
- * Basic CLI utilities
- */
-typedef struct SubCommand {
-        const char *name; /**<Name of this subcommand */
-        bool (*execute)(int argc, char **argv);
-        const char *short_desc; /**<Short description to display */
-} SubCommand;
-
-static bool list_users_internal(bool require_admin, bool require_active, bool require_system)
-{
-        QolContext *context = NULL;
-        QolUser *user = NULL;
-
-        context = qol_context_new();
-        if (!context) {
-                fprintf(stderr, "Failed to construct QolContext: %s\n", strerror(errno));
-                return false;
-        }
-
-        /* Wind the user list in reverse */
-        for (user = context->user_manager->users; user; user = user->next) {
-                if (require_admin && !qol_user_is_admin(user)) {
-                        continue;
-                }
-                if (require_active && !qol_user_is_active(user)) {
-                        continue;
-                }
-                if (require_system && qol_user_is_active(user)) {
-                        continue;
-                }
-                fprintf(stdout, "User: %s (", user->name);
-                for (size_t i = 0; i < user->n_groups; i++) {
-                        fprintf(stdout,
-                                "%s%s%s",
-                                i != 0 ? ":" : "",
-                                user->groups[i],
-                                i == user->n_groups - 1 ? ")\n" : "");
-                }
-        }
-
-        qol_context_free(context);
-        return true;
-}
-
-static bool list_all_users(void)
-{
-        return list_users_internal(false, false, false);
-}
-
-static bool list_system_users(void)
-{
-        return list_users_internal(false, false, true);
-}
-
-/**
- * List all normal users on the system
- */
-static bool list_users(void)
-{
-        return list_users_internal(false, true, false);
-}
-
-/**
- * List all admin users on the system
- */
-static bool list_admins(void)
-{
-        return list_users_internal(true, true, false);
-}
-
-static bool list_users_entry(int argc, char **argv)
-{
-        const char *t = NULL;
-
-        if (argc != 1) {
-                fprintf(stderr, "usage: list-users [system|all|admin|active]\n");
-                return false;
-        }
-
-        t = argv[0];
-
-        if (strcmp(t, "system") == 0) {
-                return list_system_users();
-        } else if (strcmp(t, "all") == 0) {
-                return list_all_users();
-        } else if (strcmp(t, "admin") == 0) {
-                return list_admins();
-        } else if (strcmp(t, "active") == 0) {
-                return list_users();
-        }
-
-        fprintf(stderr, "Unknown type: %s\n", t);
-        return false;
-}
 
 static bool perform_migration(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
@@ -192,7 +97,7 @@ the Free Software Foundation; either version 2 of the License, or\n\
  * Our known commands
  */
 SubCommand command_table[] = {
-        { "list-users", list_users_entry, "List users on the system" },
+        { "list-users", qol_cli_list_users, "List users on the system" },
         { "migrate", perform_migration, "Perform migration functions" },
         { "help", NULL, "Print this help message" },
         { "version", print_version, "Print the program version and exit" },

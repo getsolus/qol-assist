@@ -1,5 +1,6 @@
 qol_assist_sources = [
-    'main.c',
+    'cli/main.c',
+    'cli/users.c',
     'migrate.c',
     'user-manager.c',
     'util.c',
