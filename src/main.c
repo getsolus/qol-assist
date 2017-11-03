@@ -9,10 +9,13 @@
  * (at your option) any later version.
  */
 
+#define _GNU_SOURCE
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "migrate.h"
 #include "user-manager.h"
@@ -65,6 +68,12 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
         QolContext *context = NULL;
         size_t migration_level_start = 0;
         bool ret = false;
+
+        /* Before we go anywhere, kill stdin */
+        if (stdin && fileno(stdin) >= 0) {
+                close(fileno(stdin));
+                stdin = NULL;
+        }
 
         context = qol_context_new();
         if (!context) {
