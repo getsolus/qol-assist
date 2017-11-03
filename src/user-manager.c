@@ -280,6 +280,26 @@ bool qol_user_in_group(QolUser *self, const char *group)
         return false;
 }
 
+bool qol_user_is_admin(QolUser *self)
+{
+        if (!self) {
+                return false;
+        }
+
+        /* Is this root? */
+        if (self->uid == 0 && self->gid == 0) {
+                return true;
+        }
+
+        /* Wheel (sudo) user? */
+        if (qol_user_in_group(self, QOL_WHEEL_GROUP)) {
+                return true;
+        }
+
+        /* Not admin. */
+        return false;
+}
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *

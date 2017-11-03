@@ -81,6 +81,13 @@ bool qol_user_is_active(QolUser *user);
  */
 bool qol_user_in_group(QolUser *user, const char *group);
 
+/**
+ * Determine if this user has admin capabilities
+ *
+ * @note Admin means root user, or membership of the wheel (sudo) group
+ */
+bool qol_user_is_admin(QolUser *user);
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *

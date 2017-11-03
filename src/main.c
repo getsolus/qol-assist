@@ -31,10 +31,7 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         /* Wind the user list in reverse */
         for (user = manager->users; user; user = user->next) {
-                if (!qol_user_is_active(user)) {
-                        continue;
-                }
-                if (!qol_user_in_group(user, "sudo")) {
+                if (!qol_user_is_admin(user) || !qol_user_is_active(user)) {
                         continue;
                 }
                 fprintf(stdout, "User: %s (", user->name);

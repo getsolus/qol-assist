@@ -50,6 +50,10 @@ cdata.set_quoted('PACKAGE_URL', 'https://solus-project.com')
 with_minimum_uid = get_option('with-minimum-uid').to_int()
 cdata.set('QOL_MIN_UID', with_minimum_uid)
 
+# Grab the name for the sudo group (admins)
+with_wheel_group = get_option('with-wheel-group')
+cdata.set_quoted('QOL_WHEEL_GROUP', with_wheel_group)
+
 # Write config.h now
 config_h = configure_file(
      configuration: cdata,
@@ -70,6 +74,7 @@ report = [
     '    sbindir:                                @0@'.format(path_sbindir),
     '',
     '    minimum UID for non system user:        @0@'.format(with_minimum_uid),
+    '    wheel (sudo) group name:                @0@'.format(with_wheel_group),
 ]
 
 # Output some stuff to validate the build config
