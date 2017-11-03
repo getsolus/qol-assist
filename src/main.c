@@ -21,8 +21,8 @@
 /**
  * TODO: Actually populate this dude with migration functions
  */
-static qol_migration_func migration_table[] = {
-        NULL,
+static QolMigration migration_table[] = {
+        { "Test of migration system", NULL },
 };
 
 /**
@@ -56,6 +56,7 @@ static void print_users(QolContext *context)
 int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         QolContext *context = NULL;
+        size_t migration_level_start = 0;
 
         context = qol_context_new();
         if (!context) {
@@ -64,6 +65,13 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
         }
 
         print_users(context);
+
+        /* Emulate migration steps */
+        for (size_t i = migration_level_start; i < n_migrations; i++) {
+                QolMigration *m = &migration_table[i];
+
+                fprintf(stdout, "Migration %lu: '%s'\n", i, m->name);
+        }
 
         qol_context_free(context);
         return EXIT_SUCCESS;

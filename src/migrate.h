@@ -47,6 +47,14 @@ void qol_context_free(QolContext *context);
  */
 typedef bool (*qol_migration_func)(QolContext *context, int level);
 
+/**
+ * Helps to describe a QolMigration for logging purposes
+ */
+typedef struct QolMigration {
+        const char *name;
+        qol_migration_func func;
+} QolMigration;
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *
