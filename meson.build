@@ -103,6 +103,7 @@ report = [
     '    datadir:                                @0@'.format(path_datadir),
     '    sysconfdir:                             @0@'.format(path_sysconfdir),
     '    sbindir:                                @0@'.format(path_sbindir),
+    '    systemd unit directory:                 @0@'.format(with_systemd_system_unit_dir),
     '',
     '    tracking directory:                     @0@'.format(path_vardir),
     '    trigger file:                           @0@'.format(with_trigger_file),
