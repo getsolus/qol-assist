@@ -242,14 +242,7 @@ static void qol_user_free(QolUser *user)
         }
 
         /* Clear out the groups */
-        if (user->groups) {
-                for (size_t i = 0; i < user->n_groups; i++) {
-                        if (user->groups[i]) {
-                                free(user->groups[i]);
-                        }
-                }
-                free(user->groups);
-        }
+        qol_free_stringv(user->groups, user->n_groups);
 
         if (user->name) {
                 free(user->name);
