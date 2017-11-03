@@ -9,26 +9,36 @@
  * (at your option) any later version.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "migrate.h"
 #include "user-manager.h"
+#include "util.h"
 
-#define __qol_unused__ __attribute__((unused))
+/**
+ * TODO: Actually populate this dude with migration functions
+ */
+static qol_migration_func migration_table[] = {
+        NULL,
+};
 
-int main(__qol_unused__ int argc, __qol_unused__ char **argv)
+/**
+ * Track the maximum number of migrations available
+ */
+static size_t n_migrations = sizeof(migration_table) / sizeof(migration_table[0]);
+
+/**
+ * Dummy code to validate the user management API
+ */
+static void print_users(QolContext *context)
 {
-        QolUserManager *manager = NULL;
         QolUser *user = NULL;
 
-        manager = qol_user_manager_new();
-        if (!manager) {
-                fputs("Cannot get the system users!\n", stderr);
-                return EXIT_FAILURE;
-        }
-
         /* Wind the user list in reverse */
-        for (user = manager->users; user; user = user->next) {
+        for (user = context->user_manager->users; user; user = user->next) {
                 if (!qol_user_is_admin(user) || !qol_user_is_active(user)) {
                         continue;
                 }
@@ -41,9 +51,21 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                                 i == user->n_groups - 1 ? ")\n" : "");
                 }
         }
+}
 
-        qol_user_manager_free(manager);
+int main(__qol_unused__ int argc, __qol_unused__ char **argv)
+{
+        QolContext *context = NULL;
 
+        context = qol_context_new();
+        if (!context) {
+                fprintf(stderr, "Failed to construct QolContext: %s\n", strerror(errno));
+                return EXIT_FAILURE;
+        }
+
+        print_users(context);
+
+        qol_context_free(context);
         return EXIT_SUCCESS;
 }
 

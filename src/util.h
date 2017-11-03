@@ -13,6 +13,8 @@
 
 #include <sys/types.h>
 
+#define __qol_unused__ __attribute__((unused))
+
 /**
  * Attempt to grab all system shells
  *
