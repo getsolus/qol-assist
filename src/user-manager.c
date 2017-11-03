@@ -136,16 +136,22 @@ static bool qol_user_assign_groups(QolUser *user)
         /* Attempt to grab the initial group listing */
         r = getgrouplist(user->name, user->gid, groups, &n_groups);
         if (r < 0) {
+                gid_t *r_groups = NULL;
+
                 /* If the n_groups didn't change, something is bork. */
                 if (n_groups == 5) {
                         goto failed;
                 }
+
                 /* Reallocate the buffer, try again */
-                groups = realloc(groups, ((size_t)n_groups) * sizeof(gid_t));
-                if (!groups) {
+                r_groups = realloc(groups, ((size_t)n_groups) * sizeof(gid_t));
+                if (!r_groups) {
                         fputs("OOM\n", stderr);
                         goto failed;
                 }
+
+                groups = r_groups;
+
                 r = getgrouplist(user->name, user->gid, groups, &n_groups);
                 if (r < 0) {
                         goto failed;
@@ -189,12 +195,16 @@ static bool qol_user_assign_groups(QolUser *user)
         qol_free_stringv(user->groups, user->n_groups);
         user->n_groups = out_n_groups;
         user->groups = out_groups;
+        out_groups = NULL;
 
         ret = true;
 
 failed:
         if (groups) {
                 free(groups);
+        }
+        if (out_groups) {
+                qol_free_stringv(out_groups, out_n_groups);
         }
         return ret;
 }

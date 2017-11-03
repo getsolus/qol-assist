@@ -38,10 +38,9 @@ char **qol_get_shells(size_t *n_shells)
         *n_shells = 0;
 
         setusershell();
-        while ((s = getusershell())) {
+        while (getusershell()) {
                 ++shells;
         }
-        s = NULL;
         endusershell();
 
         /* Allocate root array */
@@ -52,12 +51,13 @@ char **qol_get_shells(size_t *n_shells)
 
         setusershell();
         while ((s = getusershell())) {
-                char *t = strdup(s);
-                if (!t) {
+                char *tmp = strdup(s);
+                if (!tmp) {
                         shells = i;
+                        endusershell();
                         goto failed;
                 }
-                ret[i] = t;
+                ret[i] = tmp;
                 ++i;
         }
         endusershell();
