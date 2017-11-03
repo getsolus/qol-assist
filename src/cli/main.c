@@ -41,6 +41,7 @@ the Free Software Foundation; either version 2 of the License, or\n\
 SubCommand command_table[] = {
         { "list-users", qol_cli_list_users, "List users on the system" },
         { "migrate", qol_cli_migrate, "Perform migration functions" },
+        { "trigger", qol_cli_trigger, "Schedule migration on next boot" },
         { "help", NULL, "Print this help message" },
         { "version", print_version, "Print the program version and exit" },
 };

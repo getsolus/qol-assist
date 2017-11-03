@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -119,6 +120,12 @@ bool qol_exec_command(char **command)
 
         /* Hunky dory. */
         return true;
+}
+
+bool qol_file_exists(const char *path)
+{
+        __qol_unused__ struct stat st = { 0 };
+        return lstat(path, &st) == 0;
 }
 
 /*

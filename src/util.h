@@ -45,6 +45,15 @@ void qol_free_stringv(char **strv, size_t n_str);
  */
 bool qol_exec_command(char **command);
 
+/**
+ * Determine if the given path exists
+ *
+ * @param path The path to check for existence
+ *
+ * @returns True if the path exists
+ */
+bool qol_file_exists(const char *path);
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *
