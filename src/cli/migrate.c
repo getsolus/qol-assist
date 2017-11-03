@@ -11,8 +11,11 @@
 
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "cli.h"
 #include "config.h"
@@ -44,6 +47,13 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
         QolContext *context = NULL;
         size_t migration_level_start = 0;
         bool ret = false;
+        const char *trigger_file = QOL_TRIGGER_FILE;
+
+        /* Make sure the trigger is actually there. */
+        if (!qol_file_exists(trigger_file)) {
+                fprintf(stderr, "Refusing to run migration without trigger file\n");
+                return false;
+        }
 
         context = qol_context_new();
         if (!context) {
@@ -60,6 +70,15 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
                         goto end;
                 }
                 fprintf(stdout, "Successful migration %lu: '%s'\n", i, m->name);
+        }
+
+        /* Ensure the trigger file is actually there */
+        if (unlink(trigger_file) != 0) {
+                fprintf(stderr,
+                        "WARNING: Failed to remove trigger file %s: %s\n",
+                        trigger_file,
+                        strerror(errno));
+                goto end;
         }
 
         ret = true;
