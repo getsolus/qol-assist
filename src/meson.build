@@ -8,7 +8,7 @@ qol_assist_sources = [
 # Allow clean definition of migrations
 
 migrations = [
-    '01_initial_groups',
+    '01_scanner_group',
 ]
 
 # Insert into sources

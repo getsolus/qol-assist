@@ -29,7 +29,7 @@
  * Simple table describing all of our potential migrations
  */
 static QolMigration migration_table[] = {
-        MIGRATION("Ensure inclusion of plugdev/scanner", 01_initial_groups),
+        MIGRATION("Add users to scanner group", 01_scanner_group),
 };
 
 /**

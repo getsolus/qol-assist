@@ -13,7 +13,7 @@
 
 #include "../migrate.h"
 
-bool qol_migration_01_initial_groups(QolContext *context, int level);
+bool qol_migration_01_scanner_group(QolContext *context, int level);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html

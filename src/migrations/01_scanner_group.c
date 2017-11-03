@@ -9,19 +9,28 @@
  * (at your option) any later version.
  */
 
+#define _GNU_SOURCE
+
+#include <stdio.h>
+
 #include "declared.h"
 
-/**
- * Solus updates added the requirement for 'scanner' group for using sane-backends
- * after udev rules update starting using setfacl.
- */
-static const char *initial_groups[] = {
-        "plugdev",
-        "scanner",
-};
+#define WANTED_GROUP "scanner"
 
-bool qol_migration_01_initial_groups(QolContext *context, int level)
+/**
+ * Add all active/admin users into the scanner group
+ */
+bool qol_migration_01_scanner_group(QolContext *context, int level)
 {
+        for (QolUser *user = context->user_manager->users; user; user = user->next) {
+                if (!qol_user_is_active(user) || !qol_user_is_admin(user)) {
+                        continue;
+                }
+                if (qol_user_in_group(user, WANTED_GROUP)) {
+                        continue;
+                }
+                fprintf(stderr, " -> Adding '%s' to '%s'\n", user->name, WANTED_GROUP);
+        }
         return false;
 }
 
