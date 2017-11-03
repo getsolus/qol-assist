@@ -31,7 +31,14 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         /* Wind the user list in reverse */
         for (user = manager->users; user; user = user->next) {
-                fprintf(stdout, "User: %s\n", user->name);
+                fprintf(stdout, "User: %s (", user->name);
+                for (size_t i = 0; i < user->n_groups; i++) {
+                        fprintf(stdout,
+                                "%s%s%s",
+                                i != 0 ? ":" : "",
+                                user->groups[i],
+                                i == user->n_groups - 1 ? ")\n" : "");
+                }
         }
 
         qol_user_manager_free(manager);

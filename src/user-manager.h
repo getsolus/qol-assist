@@ -20,6 +20,9 @@
 typedef struct QolUser {
         struct QolUser *next; /**<Next user in the chain */
 
+        char **groups;   /**<All groups the user belongs to */
+        size_t n_groups; /**<Number of groups */
+
         char *name; /**<Username */
         uid_t uid;  /**<User ID */
         gid_t gid;  /**<Primary group ID */

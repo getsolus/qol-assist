@@ -11,6 +11,8 @@
 
 #define _GNU_SOURCE
 
+#include <errno.h>
+#include <grp.h>
 #include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,6 +85,79 @@ end:
 }
 
 /**
+ * Attempt to assign all group names to the User object
+ */
+static bool qol_user_assign_groups(QolUser *user)
+{
+        gid_t *groups = NULL;
+        int n_groups = 5; /* Try just 5 groups at first */
+        int r = -1;
+        bool ret = false;
+
+        groups = calloc((size_t)n_groups, sizeof(gid_t));
+        if (!groups) {
+                fputs("OOM\n", stderr);
+                return false;
+        }
+
+        /* Attempt to grab the initial group listing */
+        r = getgrouplist(user->name, user->gid, groups, &n_groups);
+        if (r < 0) {
+                /* If the n_groups didn't change, something is bork. */
+                if (n_groups == 5) {
+                        goto failed;
+                }
+                /* Reallocate the buffer, try again */
+                groups = realloc(groups, ((size_t)n_groups) * sizeof(gid_t));
+                r = getgrouplist(user->name, user->gid, groups, &n_groups);
+                if (r < 0) {
+                        goto failed;
+                }
+        }
+
+        /* Set up storage for the groups */
+        user->n_groups = (size_t)n_groups;
+        user->groups = calloc(user->n_groups, sizeof(char *));
+
+        if (!user->groups) {
+                goto failed;
+        }
+
+        /* Now pop all the group names into the user's groups */
+        for (int i = 0; i < n_groups; i++) {
+                struct group *group = NULL;
+                char *cp = NULL;
+
+                group = getgrgid(groups[i]);
+                if (!group) {
+                        if (errno != 0) {
+                                goto failed;
+                        }
+                        fprintf(stderr,
+                                "Skipping invalid group '%d' for '%s'\n",
+                                groups[i],
+                                user->name);
+                        continue;
+                }
+
+                cp = strdup(group->gr_name);
+                if (!cp) {
+                        fputs("OOM\n", stderr);
+                        goto failed;
+                }
+                user->groups[i] = cp;
+        }
+
+        ret = true;
+
+failed:
+        if (groups) {
+                free(groups);
+        }
+        return ret;
+}
+
+/**
  * Construct a new QolUser
  *
  * TODO: Actually construct this guy using pwent stuff
@@ -97,9 +172,16 @@ QolUser *qol_user_new(struct passwd *pwd)
                 return NULL;
         }
 
+        ret->uid = pwd->pw_uid;
+        ret->gid = pwd->pw_gid;
+
         /* TODO: Init user fully */
         ret->name = strdup(pwd->pw_name);
         if (!ret->name) {
+                goto failed;
+        }
+
+        if (!qol_user_assign_groups(ret)) {
                 goto failed;
         }
 
@@ -122,6 +204,16 @@ static void qol_user_free(QolUser *user)
         /* Chain to the next guy */
         if (user->next) {
                 qol_user_free(user->next);
+        }
+
+        /* Clear out the groups */
+        if (user->groups) {
+                for (size_t i = 0; i < user->n_groups; i++) {
+                        if (user->groups[i]) {
+                                free(user->groups[i]);
+                        }
+                }
+                free(user->groups);
         }
 
         if (user->name) {
