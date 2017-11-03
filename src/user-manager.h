@@ -26,6 +26,8 @@ typedef struct QolUser {
         char *name; /**<Username */
         uid_t uid;  /**<User ID */
         gid_t gid;  /**<Primary group ID */
+
+        bool valid_shell; /**<Whether the shell is actually valid */
 } QolUser;
 
 /**

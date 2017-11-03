@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "user-manager.h"
 
@@ -162,6 +163,34 @@ failed:
 }
 
 /**
+ * Determine if the shell is valid.
+ * This is grossly inefficient as it rewinds and keeps reading the
+ * shells file.
+ *
+ * TODO: Find a way to cache shells globally.
+ */
+static bool qol_is_shell_valid(const char *shell)
+{
+        char *usershell = NULL;
+        bool ret = false;
+
+        if (!shell) {
+                return false;
+        }
+        setusershell();
+
+        while ((usershell = getusershell()) != NULL) {
+                if (strcmp(usershell, shell) == 0) {
+                        ret = true;
+                        break;
+                }
+        }
+
+        endusershell();
+        return ret;
+}
+
+/**
  * Construct a new QolUser
  *
  * TODO: Actually construct this guy using pwent stuff
@@ -178,6 +207,7 @@ QolUser *qol_user_new(struct passwd *pwd)
 
         ret->uid = pwd->pw_uid;
         ret->gid = pwd->pw_gid;
+        ret->valid_shell = qol_is_shell_valid(pwd->pw_shell);
 
         /* TODO: Init user fully */
         ret->name = strdup(pwd->pw_name);

@@ -31,6 +31,9 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         /* Wind the user list in reverse */
         for (user = manager->users; user; user = user->next) {
+                if (!user->valid_shell) {
+                        continue;
+                }
                 fprintf(stdout, "User: %s (", user->name);
                 for (size_t i = 0; i < user->n_groups; i++) {
                         fprintf(stdout,
