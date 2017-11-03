@@ -43,6 +43,7 @@ path_sbindir = join_paths(path_prefix, get_option('sbindir'))
 cdata = configuration_data()
 
 # General options..
+cdata.set_quoted('PACKAGE_NAME', meson.project_name())
 cdata.set_quoted('PACKAGE_VERSION', meson.project_version())
 cdata.set_quoted('PACKAGE_URL', 'https://solus-project.com')
 

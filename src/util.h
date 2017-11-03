@@ -16,6 +16,8 @@
 
 #define __qol_unused__ __attribute__((unused))
 
+#define ARRAY_SIZE(x) sizeof(x) / sizeof(x[0])
+
 /**
  * Attempt to grab all system shells
  *

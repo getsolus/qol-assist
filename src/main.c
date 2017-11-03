@@ -17,6 +17,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "config.h"
 #include "migrate.h"
 #include "user-manager.h"
 #include "util.h"
@@ -41,11 +42,27 @@ static QolMigration migration_table[] = {
 static size_t n_migrations = sizeof(migration_table) / sizeof(migration_table[0]);
 
 /**
+ * Basic CLI utilities
+ */
+typedef struct SubCommand {
+        const char *name; /**<Name of this subcommand */
+        bool (*execute)(void);
+        const char *short_desc; /**<Short description to display */
+} SubCommand;
+
+/**
  * Dummy code to validate the user management API
  */
-static void print_users(QolContext *context)
+static bool list_users(void)
 {
+        QolContext *context = NULL;
         QolUser *user = NULL;
+
+        context = qol_context_new();
+        if (!context) {
+                fprintf(stderr, "Failed to construct QolContext: %s\n", strerror(errno));
+                return false;
+        }
 
         /* Wind the user list in reverse */
         for (user = context->user_manager->users; user; user = user->next) {
@@ -61,9 +78,11 @@ static void print_users(QolContext *context)
                                 i == user->n_groups - 1 ? ")\n" : "");
                 }
         }
+
+        return true;
 }
 
-int main(__qol_unused__ int argc, __qol_unused__ char **argv)
+static bool perform_migration(void)
 {
         QolContext *context = NULL;
         size_t migration_level_start = 0;
@@ -77,11 +96,8 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
         context = qol_context_new();
         if (!context) {
-                fprintf(stderr, "Failed to construct QolContext: %s\n", strerror(errno));
-                return EXIT_FAILURE;
+                return false;
         }
-
-        print_users(context);
 
         /* Emulate migration steps */
         for (size_t i = migration_level_start; i < n_migrations; i++) {
@@ -99,7 +115,80 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 
 end:
         qol_context_free(context);
-        return ret ? EXIT_SUCCESS : EXIT_FAILURE;
+        return ret;
+}
+
+static bool print_version(void)
+{
+        fputs(PACKAGE_NAME " version " PACKAGE_VERSION "\n\n", stdout);
+        fputs("Copyright © 2017 Solus Project\n\n", stdout);
+        fputs(PACKAGE_NAME
+              " "
+              "is free software; you can redistribute it and/or modify\n\
+it under the terms of the GNU General Public License as published by\n\
+the Free Software Foundation; either version 2 of the License, or\n\
+(at your option) any later version.\n",
+              stdout);
+
+        return true;
+}
+
+/**
+ * Our known commands
+ */
+SubCommand command_table[] = {
+        { "list-admin", list_users, "List administrative users on the system" },
+        { "migrate", perform_migration, "Perform migration functions" },
+        { "help", NULL, "Print this help message" },
+        { "version", print_version, "Print the program version and exit" },
+};
+
+static void print_usage(const char *binname)
+{
+        fprintf(stderr, "%s: usage: \n\n", binname);
+
+        for (size_t i = 0; i < ARRAY_SIZE(command_table); i++) {
+                SubCommand *command = &command_table[i];
+
+                fprintf(stdout, "%*s - %s\n", 20, command->name, command->short_desc);
+        }
+}
+
+int main(__qol_unused__ int argc, __qol_unused__ char **argv)
+{
+        const char *subcommand = NULL;
+        SubCommand *command = NULL;
+
+        if (argc != 2) {
+                print_usage(argv[0]);
+                return EXIT_FAILURE;
+        }
+
+        subcommand = argv[1];
+        for (size_t i = 0; i < ARRAY_SIZE(command_table); i++) {
+                SubCommand *c = &command_table[i];
+                if (strcmp(c->name, subcommand) == 0) {
+                        command = c;
+                        break;
+                }
+        }
+
+        if (!command) {
+                fprintf(stderr, "Unknown command '%s'\n", subcommand);
+                print_usage(argv[0]);
+                return EXIT_FAILURE;
+        }
+
+        if (command->execute && command->execute()) {
+                return EXIT_SUCCESS;
+        }
+
+        if (strcmp(command->name, "help") == 0 && !command->execute) {
+                print_usage(argv[0]);
+                return EXIT_SUCCESS;
+        }
+
+        return EXIT_FAILURE;
 }
 
 /*
