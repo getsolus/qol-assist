@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include "user-manager.h"
+#include "util.h"
 
 static void qol_user_free(QolUser *user);
 static QolUser *qol_user_new(struct passwd *pwd);
@@ -50,7 +51,25 @@ void qol_user_manager_free(QolUserManager *self)
                 return;
         }
         qol_user_free(self->users);
+        qol_free_stringv(self->shells, self->n_shells);
         free(self);
+}
+
+/**
+ * Determine if the shell is valid by referencing our cached shells file
+ */
+static bool qol_user_manager_is_shell_valid(QolUserManager *self, const char *shell)
+{
+        if (!shell) {
+                return false;
+        }
+
+        for (size_t i = 0; i < self->n_shells; i++) {
+                if (strcmp(self->shells[i], shell) == 0) {
+                        return true;
+                }
+        }
+        return false;
 }
 
 bool qol_user_manager_refresh(QolUserManager *self)
@@ -58,6 +77,15 @@ bool qol_user_manager_refresh(QolUserManager *self)
         struct passwd *pwd = NULL;
         QolUser *root_user = NULL;
         bool ret = false;
+
+        qol_free_stringv(self->shells, self->n_shells);
+        self->n_shells = 0;
+
+        /* Must be able to grab shells! */
+        self->shells = qol_get_shells(&self->n_shells);
+        if (!self->shells) {
+                return false;
+        }
 
         setpwent();
 
@@ -68,6 +96,8 @@ bool qol_user_manager_refresh(QolUserManager *self)
                 if (!user) {
                         goto end;
                 }
+
+                user->valid_shell = qol_user_manager_is_shell_valid(self, pwd->pw_shell);
 
                 /* Merge list */
                 user->next = root_user;
@@ -163,34 +193,6 @@ failed:
 }
 
 /**
- * Determine if the shell is valid.
- * This is grossly inefficient as it rewinds and keeps reading the
- * shells file.
- *
- * TODO: Find a way to cache shells globally.
- */
-static bool qol_is_shell_valid(const char *shell)
-{
-        char *usershell = NULL;
-        bool ret = false;
-
-        if (!shell) {
-                return false;
-        }
-        setusershell();
-
-        while ((usershell = getusershell()) != NULL) {
-                if (strcmp(usershell, shell) == 0) {
-                        ret = true;
-                        break;
-                }
-        }
-
-        endusershell();
-        return ret;
-}
-
-/**
  * Construct a new QolUser
  *
  * TODO: Actually construct this guy using pwent stuff
@@ -207,7 +209,6 @@ QolUser *qol_user_new(struct passwd *pwd)
 
         ret->uid = pwd->pw_uid;
         ret->gid = pwd->pw_gid;
-        ret->valid_shell = qol_is_shell_valid(pwd->pw_shell);
 
         /* TODO: Init user fully */
         ret->name = strdup(pwd->pw_name);

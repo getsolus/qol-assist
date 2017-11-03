@@ -35,6 +35,9 @@ typedef struct QolUser {
  */
 typedef struct QolUserManager {
         QolUser *users; /**<Known users */
+
+        char **shells;
+        size_t n_shells;
 } QolUserManager;
 
 /**
