@@ -19,64 +19,7 @@
 
 #include "cli.h"
 #include "config.h"
-#include "migrate.h"
-#include "user-manager.h"
 #include "util.h"
-
-#include "migrations/declared.h"
-
-#define MIGRATION(x, y)                                                                            \
-        {                                                                                          \
-                x, qol_migration_##y                                                               \
-        }
-
-/**
- * Simple table describing all of our potential migrations
- */
-static QolMigration migration_table[] = {
-        MIGRATION("Add users to scanner group", 01_scanner_group),
-};
-
-/**
- * Track the maximum number of migrations available
- */
-static size_t n_migrations = sizeof(migration_table) / sizeof(migration_table[0]);
-
-static bool perform_migration(__qol_unused__ int argc, __qol_unused__ char **argv)
-{
-        QolContext *context = NULL;
-        size_t migration_level_start = 0;
-        bool ret = false;
-
-        /* Before we go anywhere, kill stdin */
-        if (stdin && fileno(stdin) >= 0) {
-                close(fileno(stdin));
-                stdin = NULL;
-        }
-
-        context = qol_context_new();
-        if (!context) {
-                return false;
-        }
-
-        /* Emulate migration steps */
-        for (size_t i = migration_level_start; i < n_migrations; i++) {
-                QolMigration *m = &migration_table[i];
-
-                fprintf(stdout, "Begin migration %lu: '%s'\n", i, m->name);
-                if (!m->func(context, (int)i)) {
-                        fprintf(stderr, "Failed migration %lu: '%s'\n", i, m->name);
-                        goto end;
-                }
-                fprintf(stdout, "Successful migration %lu: '%s'\n", i, m->name);
-        }
-
-        ret = true;
-
-end:
-        qol_context_free(context);
-        return ret;
-}
 
 static bool print_version(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
@@ -98,7 +41,7 @@ the Free Software Foundation; either version 2 of the License, or\n\
  */
 SubCommand command_table[] = {
         { "list-users", qol_cli_list_users, "List users on the system" },
-        { "migrate", perform_migration, "Perform migration functions" },
+        { "migrate", qol_cli_migrate, "Perform migration functions" },
         { "help", NULL, "Print this help message" },
         { "version", print_version, "Print the program version and exit" },
 };

@@ -27,6 +27,11 @@ typedef struct SubCommand {
  */
 bool qol_cli_list_users(int argc, char **argv);
 
+/**
+ * Perform any migration tasks as deemed needed
+ */
+bool qol_cli_migrate(int argc, char **argv);
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *
