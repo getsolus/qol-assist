@@ -250,6 +250,20 @@ static void qol_user_free(QolUser *user)
         free(user);
 }
 
+/**
+ * Simple detection: is the shell valid, and is the UID high enough.
+ */
+bool qol_user_is_active(QolUser *user)
+{
+        if (!user) {
+                return false;
+        }
+        if (user->uid >= 1000 && user->valid_shell) {
+                return true;
+        }
+        return false;
+}
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *

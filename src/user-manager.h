@@ -62,6 +62,11 @@ bool qol_user_manager_refresh(QolUserManager *manager);
  */
 void qol_user_manager_free(QolUserManager *manager);
 
+/**
+ * Determine if this is an "active" user, i.e. not a system user
+ */
+bool qol_user_is_active(QolUser *user);
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *
