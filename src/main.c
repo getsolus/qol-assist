@@ -64,6 +64,7 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         QolContext *context = NULL;
         size_t migration_level_start = 0;
+        bool ret = false;
 
         context = qol_context_new();
         if (!context) {
@@ -80,13 +81,16 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                 fprintf(stdout, "Begin migration %lu: '%s'\n", i, m->name);
                 if (!m->func(context, (int)i)) {
                         fprintf(stderr, "Failed migration %lu: '%s'\n", i, m->name);
-                        break;
+                        goto end;
                 }
                 fprintf(stdout, "Successful migration %lu: '%s'\n", i, m->name);
         }
 
+        ret = true;
+
+end:
         qol_context_free(context);
-        return EXIT_SUCCESS;
+        return ret ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /*
