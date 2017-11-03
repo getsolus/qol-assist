@@ -41,6 +41,20 @@ path_datadir = join_paths(path_prefix, get_option('datadir'))
 path_sbindir = join_paths(path_prefix, get_option('sbindir'))
 path_vardir = join_paths(path_prefix, get_option('localstatedir'), 'lib', meson.project_name())
 
+# Systemd configuration
+with_systemd_system_unit_dir = get_option('with-systemd-system-unit-dir')
+if with_systemd_system_unit_dir == ''
+    # Automatically discover systemd unit location from pkgconfig
+    message('Asking pkg-config for systemd\'s system unit directory')
+    dep_systemd = dependency('systemd')
+    with_systemd_system_unit_dir = dep_systemd.get_pkgconfig_variable('systemdsystemunitdir')
+
+    if with_systemd_system_unit_dir == ''
+        error('Cannot locate the systemd system unit directory')
+    endif
+endif
+
+
 # Sort out config.h now
 cdata = configuration_data()
 
@@ -74,6 +88,9 @@ config_h = configure_file(
      output: 'config.h',
 )
 config_h_dir = include_directories('.')
+
+# Sort out systemd unit
+subdir('data')
 
 # Now go build the source
 subdir('src')

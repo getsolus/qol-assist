@@ -1,0 +1,11 @@
+[Unit]
+Description=QoL Migration Service
+ConditionPathExists=@QOL_STATUS_FILE@
+After=systemd-sysusers.service
+
+[Service]
+Type=oneshot
+ExecStart=@SBINDIR@/qol-assist migrate
+
+[Install]
+WantedBy=sysinit.target
