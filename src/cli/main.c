@@ -11,7 +11,6 @@
 
 #define _GNU_SOURCE
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,6 +61,12 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
         const char *subcommand = NULL;
         SubCommand *command = NULL;
         const char *binname = argv[0];
+
+        /* Before we go anywhere, kill stdin */
+        if (stdin && fileno(stdin) >= 0) {
+                close(fileno(stdin));
+                stdin = NULL;
+        }
 
         if (argc < 2) {
                 print_usage(argv[0]);

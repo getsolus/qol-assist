@@ -13,7 +13,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include "cli.h"
 #include "config.h"
@@ -45,12 +44,6 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
         QolContext *context = NULL;
         size_t migration_level_start = 0;
         bool ret = false;
-
-        /* Before we go anywhere, kill stdin */
-        if (stdin && fileno(stdin) >= 0) {
-                close(fileno(stdin));
-                stdin = NULL;
-        }
 
         context = qol_context_new();
         if (!context) {
