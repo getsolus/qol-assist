@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include "user-manager.h"
+#include "util.h"
 
 #define __qol_unused__ __attribute__((unused))
 
@@ -20,6 +21,8 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         QolUserManager *manager = NULL;
         QolUser *user = NULL;
+        char **shells = NULL;
+        size_t n_shells = 0;
 
         manager = qol_user_manager_new();
         if (!manager) {
@@ -48,7 +51,19 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
                 }
         }
 
+        shells = qol_get_shells(&n_shells);
+        if (!shells) {
+                fputs("Failed to grab shells!\n", stderr);
+                goto done;
+        }
+
+        for (size_t i = 0; i < n_shells; i++) {
+                fprintf(stdout, "Shell: %s\n", shells[i]);
+        }
+
+done:
         qol_user_manager_free(manager);
+        qol_free_stringv(shells, n_shells);
 
         return EXIT_FAILURE;
 }
