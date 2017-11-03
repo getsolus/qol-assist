@@ -15,8 +15,6 @@
 
 #include "declared.h"
 
-#define WANTED_GROUP "scanner"
-
 /**
  * Add all active/admin users into the scanner group
  */

@@ -13,6 +13,7 @@ qol_assist_sources = [
 
 migrations = [
     '01_scanner_group',
+    '02_plugdev_group',
 ]
 
 # Insert into sources

@@ -35,6 +35,7 @@
  */
 static QolMigration migration_table[] = {
         MIGRATION("Add users to scanner group", 01_scanner_group),
+        MIGRATION("Add users to plugdev group", 02_plugdev_group),
 };
 
 /**
