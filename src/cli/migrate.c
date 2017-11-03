@@ -135,8 +135,16 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         QolContext *context = NULL;
         size_t migration_level_start = 0;
+        int start_level = 0;
         bool ret = false;
         const char *trigger_file = QOL_TRIGGER_FILE;
+
+        if (!qol_get_migration_level(&start_level)) {
+                fprintf(stderr, "Cannot begin migration, file a bug to %s\n", PACKAGE_BUG_TRACKER);
+                return false;
+        } else {
+                migration_level_start = (size_t)start_level;
+        }
 
         if (geteuid() != 0 || getegid() != 0) {
                 fprintf(stderr, "This command must be run with root privileges.\n");
@@ -164,6 +172,15 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
                         goto end;
                 }
                 fprintf(stdout, "Successful migration %lu: '%s'\n", i, m->name);
+
+                /* Now update the migration level for each migration.. */
+                if (!qol_set_migration_level((int)i)) {
+                        fprintf(stderr,
+                                "Cannot continue migration from level %lu, file a bug to %s\n",
+                                i,
+                                PACKAGE_BUG_TRACKER);
+                        goto end;
+                }
         }
 
         /* Ensure the trigger file is actually there */

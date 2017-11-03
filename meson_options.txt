@@ -1,2 +1,3 @@
 option('with-minimum-uid', type: 'string', description: 'Minimum UID for non-system users', value: '1000')
 option('with-wheel-group', type: 'string', description: 'Default wheel (sudo) group name', value: 'sudo')
+option('with-bug-tracker', type: 'string', description: 'Bug tracker URL', value: 'https://dev.solus-project.com')
