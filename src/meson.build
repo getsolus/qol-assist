@@ -10,4 +10,7 @@ qol_assist = executable(
     sources: qol_assist_sources,
     install: true,
     install_dir: path_sbindir,
+    include_directories: [
+        config_h_dir,
+    ],
 )

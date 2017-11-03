@@ -46,6 +46,10 @@ cdata = configuration_data()
 cdata.set_quoted('PACKAGE_VERSION', meson.project_version())
 cdata.set_quoted('PACKAGE_URL', 'https://solus-project.com')
 
+# If the uid isn't provided as a number, the build will freak out.
+with_minimum_uid = get_option('with-minimum-uid').to_int()
+cdata.set('QOL_MIN_UID', with_minimum_uid)
+
 # Write config.h now
 config_h = configure_file(
      configuration: cdata,
@@ -64,6 +68,8 @@ report = [
     '    datadir:                                @0@'.format(path_datadir),
     '    sysconfdir:                             @0@'.format(path_sysconfdir),
     '    sbindir:                                @0@'.format(path_sbindir),
+    '',
+    '    minimum UID for non system user:        @0@'.format(with_minimum_uid),
 ]
 
 # Output some stuff to validate the build config

@@ -19,6 +19,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "config.h"
 #include "user-manager.h"
 #include "util.h"
 
@@ -258,7 +259,7 @@ bool qol_user_is_active(QolUser *user)
         if (!user) {
                 return false;
         }
-        if (user->uid >= 1000 && user->valid_shell) {
+        if (user->uid >= QOL_MIN_UID && user->valid_shell) {
                 return true;
         }
         return false;
