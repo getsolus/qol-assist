@@ -18,11 +18,17 @@
 #include "user-manager.h"
 #include "util.h"
 
+static bool dummy_func(__qol_unused__ QolContext *context, int level)
+{
+        fprintf(stderr, "> Ermagahd i migrated (%d)\n", level);
+        return true;
+}
+
 /**
  * TODO: Actually populate this dude with migration functions
  */
 static QolMigration migration_table[] = {
-        { "Test of migration system", NULL },
+        { "Test of migration system", dummy_func },
 };
 
 /**
@@ -70,7 +76,12 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
         for (size_t i = migration_level_start; i < n_migrations; i++) {
                 QolMigration *m = &migration_table[i];
 
-                fprintf(stdout, "Migration %lu: '%s'\n", i, m->name);
+                fprintf(stdout, "Begin migration %lu: '%s'\n", i, m->name);
+                if (!m->func(context, (int)i)) {
+                        fprintf(stderr, "Failed migration %lu: '%s'\n", i, m->name);
+                        break;
+                }
+                fprintf(stdout, "Successful migration %lu: '%s'\n", i, m->name);
         }
 
         qol_context_free(context);
