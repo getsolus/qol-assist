@@ -2,3 +2,4 @@ option('with-minimum-uid', type: 'string', description: 'Minimum UID for non-sys
 option('with-wheel-group', type: 'string', description: 'Default wheel (sudo) group name', value: 'sudo')
 option('with-bug-tracker', type: 'string', description: 'Bug tracker URL', value: 'https://dev.solus-project.com')
 option('with-systemd-system-unit-dir', type: 'string', description: 'systemd unit directory')
+option('with-static-binary', type: 'boolean', description: 'Build a static binary for upgrade resilience', value: 'false')

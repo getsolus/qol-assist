@@ -54,6 +54,11 @@ if with_systemd_system_unit_dir == ''
     endif
 endif
 
+with_static_binary = get_option('with-static-binary')
+
+if with_static_binary == true
+    message('WARNING: Do not build static binaries with glibc!')
+endif
 
 # Sort out config.h now
 cdata = configuration_data()
@@ -104,6 +109,7 @@ report = [
     '    sysconfdir:                             @0@'.format(path_sysconfdir),
     '    sbindir:                                @0@'.format(path_sbindir),
     '    systemd unit directory:                 @0@'.format(with_systemd_system_unit_dir),
+    '    build static binary:                    @0@'.format(with_static_binary),
     '',
     '    Migration tracking:',
     '    ===================',

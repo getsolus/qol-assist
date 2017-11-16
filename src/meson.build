@@ -9,6 +9,12 @@ qol_assist_sources = [
     'util.c',
 ]
 
+# Set static if requested (defaults to being enabled)
+qol_link_args = []
+if with_static_binary == true
+    qol_link_args += '-static'
+endif
+
 # Allow clean definition of migrations
 
 migrations = [
@@ -25,6 +31,7 @@ endforeach
 qol_assist = executable(
     'qol-assist',
     sources: qol_assist_sources,
+    link_args: qol_link_args,
     install: true,
     install_dir: path_sbindir,
     include_directories: [
