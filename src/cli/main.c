@@ -66,7 +66,6 @@ int main(__qol_unused__ int argc, __qol_unused__ char **argv)
         /* Before we go anywhere, kill stdin */
         if (stdin && fileno(stdin) >= 0) {
                 close(fileno(stdin));
-                stdin = NULL;
         }
 
         if (argc < 2) {
