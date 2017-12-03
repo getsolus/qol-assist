@@ -23,10 +23,22 @@
  */
 bool qol_migration_push_active_admin_group(QolContext *context, const char *group);
 
+/**
+ * Update the group id for the given group name if it does not currently
+ * match the given ID
+ *
+ * @param context Pointer to a valid QolContext
+ * @param group Name for the group in question
+ *
+ * @returns True if the operation succeeded
+ */
+bool qol_migration_update_group_id(QolContext *context, const char *group, int gid);
+
 /* Migrations follow */
 
 bool qol_migration_01_scanner_group(QolContext *context);
 bool qol_migration_02_plugdev_group(QolContext *context);
+bool qol_migration_03_users_group_gid(QolContext *context);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html

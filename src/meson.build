@@ -20,6 +20,7 @@ endif
 migrations = [
     '01_scanner_group',
     '02_plugdev_group',
+    '03_users_group_gid',
 ]
 
 # Insert into sources

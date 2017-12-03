@@ -11,7 +11,9 @@
 
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "declared.h"
 
@@ -35,6 +37,29 @@ bool qol_migration_push_active_admin_group(QolContext *context, const char *grou
                                 group);
                         return false;
                 }
+        }
+        return true;
+}
+
+bool qol_migration_update_group_id(QolContext *context, const char *group, int gid)
+{
+        int current_id = 1;
+
+        current_id = qol_user_manager_get_group_id(context->user_manager, group);
+        if (current_id < 0) {
+                fprintf(stderr, "Failed to find '%s' group: %s\n", group, strerror(errno));
+                return false;
+        }
+
+        /* No need to perform an update here, it's been done */
+        if (current_id == gid) {
+                return true;
+        }
+
+        fprintf(stderr, "Changing group '%s' ID from %d to %d\n", group, current_id, gid);
+        if (!qol_user_manager_change_group_id(context->user_manager, group, gid)) {
+                fprintf(stderr, "Failed to change group id: %s\n", strerror(errno));
+                return false;
         }
         return true;
 }
