@@ -24,6 +24,18 @@
 bool qol_migration_push_active_admin_group(QolContext *context, const char *group);
 
 /**
+ * Add any active users to the specified group if they're not in it already
+ *
+ * @note This will add for users *and* admins
+ *
+ * @param context Pointer to a valid QolContext
+ * @param group Name of the group for the users to join
+ *
+ * @returns True if the operation succeeded
+ */
+bool qol_migration_push_active_group(QolContext *context, const char *group);
+
+/**
  * Update the group id for the given group name if it does not currently
  * match the given ID
  *
@@ -39,6 +51,7 @@ bool qol_migration_update_group_id(QolContext *context, const char *group, int g
 bool qol_migration_01_scanner_group(QolContext *context);
 bool qol_migration_02_plugdev_group(QolContext *context);
 bool qol_migration_03_users_group_gid(QolContext *context);
+bool qol_migration_04_users_group_join(QolContext *context);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html

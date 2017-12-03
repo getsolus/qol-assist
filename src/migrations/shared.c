@@ -17,13 +17,13 @@
 
 #include "declared.h"
 
-/**
- * Shared code for our API..
- */
-bool qol_migration_push_active_admin_group(QolContext *context, const char *group)
+static bool qol_migration_push(QolContext *context, const char *group, bool require_admin)
 {
         for (QolUser *user = context->user_manager->users; user; user = user->next) {
-                if (!qol_user_is_active(user) || !qol_user_is_admin(user)) {
+                if (!qol_user_is_active(user)) {
+                        continue;
+                }
+                if (require_admin && !qol_user_is_admin(user)) {
                         continue;
                 }
                 if (qol_user_in_group(user, group)) {
@@ -39,6 +39,19 @@ bool qol_migration_push_active_admin_group(QolContext *context, const char *grou
                 }
         }
         return true;
+}
+
+/**
+ * Shared code for our API..
+ */
+bool qol_migration_push_active_admin_group(QolContext *context, const char *group)
+{
+        return qol_migration_push(context, group, true);
+}
+
+bool qol_migration_push_active_group(QolContext *context, const char *group)
+{
+        return qol_migration_push(context, group, false);
 }
 
 bool qol_migration_update_group_id(QolContext *context, const char *group, int gid)
