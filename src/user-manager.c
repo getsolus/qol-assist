@@ -340,6 +340,53 @@ bool qol_user_add_to_group(QolUser *self, const char *group)
         return true;
 }
 
+int qol_user_manager_get_group_id(__qol_unused__ QolUserManager *self, const char *group)
+{
+        struct group *grp = NULL;
+
+        grp = getgrnam(group);
+        if (!grp) {
+                return -1;
+        }
+        return (int)grp->gr_gid;
+}
+
+bool qol_user_manager_change_group_id(QolUserManager *self, const char *group, int gid)
+{
+        char *gid_str = NULL;
+        bool ret = false;
+
+        char *command[] = {
+                "/usr/sbin/groupmod",
+                "-g",
+                NULL, /* gid */
+                NULL, /* group */
+                NULL,
+        };
+
+        if (asprintf(&gid_str, "%u", gid) < 0) {
+                return false;
+        }
+
+        command[2] = gid_str;
+        command[3] = (char *)group;
+
+        if (!qol_exec_command(command)) {
+                goto failed;
+        }
+
+        /* Check the updated gid is now valid */
+        if (qol_user_manager_get_group_id(self, group) != gid) {
+                goto failed;
+        }
+
+        ret = true;
+
+failed:
+        free(gid_str);
+        return ret;
+}
+
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
  *

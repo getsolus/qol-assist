@@ -63,6 +63,27 @@ bool qol_user_manager_refresh(QolUserManager *manager);
 void qol_user_manager_free(QolUserManager *manager);
 
 /**
+ * Attempt to change the group ID for the given group
+ *
+ * @param manager Pointer to an allocated QolUserManager
+ * @param group Group name to update
+ * @param gid New gid for the group to take
+ *
+ * @returns True if the update worked, otherwise false.
+ */
+bool qol_user_manager_change_group_id(QolUserManager *manager, const char *group, int gid);
+
+/**
+ * Get the group ID for the named group
+ *
+ * @param self Pointer to an allocated QolUserManager
+ * @param group Group name to check
+ *
+ * @returns The new gid, or -1 for an unknown group ID
+ */
+int qol_user_manager_get_group_id(QolUserManager *manager, const char *group);
+
+/**
  * Determine if this is an "active" user, i.e. not a system user
  *
  * @param user Pointer to an allocated user
