@@ -22,6 +22,7 @@ migrations = [
     '02_plugdev_group',
     '03_users_group_gid',
     '04_users_group_join',
+    '05_fuse_group',
 ]
 
 # Insert into sources

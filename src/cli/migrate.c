@@ -46,6 +46,7 @@ static QolMigration migration_table[] = {
         REVOKED_MIGRATION("musl didn't understand stateless"),
         MIGRATION("Set static gid for 'users' group", 03_users_group_gid),
         MIGRATION("Add users to 'users' group", 04_users_group_join),
+        MIGRATION("Add users to fuse group", 05_fuse_group),
 };
 
 /**

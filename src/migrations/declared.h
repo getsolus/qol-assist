@@ -52,6 +52,7 @@ bool qol_migration_01_scanner_group(QolContext *context);
 bool qol_migration_02_plugdev_group(QolContext *context);
 bool qol_migration_03_users_group_gid(QolContext *context);
 bool qol_migration_04_users_group_join(QolContext *context);
+bool qol_migration_05_fuse_group(QolContext *context);
 
 /*
  * Editor modelines  -  https://www.wireshark.org/tools/modelines.html
