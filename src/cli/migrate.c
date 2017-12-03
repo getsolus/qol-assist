@@ -31,12 +31,19 @@
                 x, qol_migration_##y                                                               \
         }
 
+#define REVOKED_MIGRATION(x)                                                                       \
+        {                                                                                          \
+                x, NULL                                                                            \
+        }
+
 /**
  * Simple table describing all of our potential migrations
  */
 static QolMigration migration_table[] = {
         MIGRATION("Add users to scanner group", 01_scanner_group),
         MIGRATION("Add users to plugdev group", 02_plugdev_group),
+        REVOKED_MIGRATION("musl didn't understand stateless"),
+        REVOKED_MIGRATION("musl didn't understand stateless"),
         MIGRATION("Set static gid for 'users' group", 03_users_group_gid),
         MIGRATION("Add users to 'users' group", 04_users_group_join),
 };
@@ -178,6 +185,11 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
         /* Emulate migration steps */
         for (size_t i = migration_level_start; i < n_migrations; i++) {
                 QolMigration *m = &migration_table[i];
+                /* Empty function pointer means we had to remove an old migration
+                 * and retain the level structure */
+                if (!m->func) {
+                        goto record_level;
+                }
 
                 fprintf(stdout, "Begin migration %lu: '%s'\n", i, m->name);
                 if (!m->func(context)) {
@@ -186,6 +198,7 @@ bool qol_cli_migrate(__qol_unused__ int argc, __qol_unused__ char **argv)
                 }
                 fprintf(stdout, "Successful migration %lu: '%s'\n", i, m->name);
 
+        record_level:
                 /* Now update the migration level for each migration.. */
                 if (!qol_set_migration_level((int)i)) {
                         fprintf(stderr,
