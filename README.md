@@ -22,6 +22,6 @@ need, but it will grow in time to be an agnostic project suitable outside of Sol
 
 ## Authors
 
-Copyright © 2017 Solus Project
+Copyright © 2017-2018 Solus Project
 
 `qol-assist` is available under the terms of the `GPL-2.0` license.

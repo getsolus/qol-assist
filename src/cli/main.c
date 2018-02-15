@@ -1,7 +1,7 @@
 /*
  * This file is part of qol-assist.
  *
- * Copyright © 2017 Solus Project
+ * Copyright © 2017-2018 Solus Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 static bool print_version(__qol_unused__ int argc, __qol_unused__ char **argv)
 {
         fputs(PACKAGE_NAME " version " PACKAGE_VERSION "\n\n", stdout);
-        fputs("Copyright © 2017 Solus Project\n\n", stdout);
+        fputs("Copyright © 2017-2018 Solus Project\n\n", stdout);
         fputs(PACKAGE_NAME
               " "
               "is free software; you can redistribute it and/or modify\n\
