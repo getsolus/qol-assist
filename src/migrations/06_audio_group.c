@@ -16,7 +16,7 @@
 #include "declared.h"
 
 /**
- * Add all active/admin users into the scanner group
+ * Add all active/admin users into the audio group
  */
 bool qol_migration_06_audio_group(QolContext *context)
 {
