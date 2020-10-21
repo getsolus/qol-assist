@@ -16,7 +16,7 @@ package cli
 
 import (
 	"github.com/DataDrake/cli-ng/cmd"
-	"github.com/DataDrake/waterlog"
+	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/level"
 	"github.com/getsolus/qol-assist/core"
 	"os"
@@ -29,23 +29,20 @@ var migrate = &cmd.CMD{
 	Args:  &struct{}{},
 	Run: func(root *cmd.RootCMD, _ *cmd.CMD) {
 		if gFlags := root.Flags.(*GlobalFlags); gFlags.Debug {
-			waterlog.SetLevel(level.Debug)
+			log.SetLevel(level.Debug)
 		}
 
 		if os.Geteuid() != 0 || os.Getegid() != 0 {
-			waterlog.Errorln("This command must be run with root privileges.")
-			return
+			log.Fatalln("This command must be run with root privileges.")
 		}
 
 		if !core.TriggerFileExists() {
-			waterlog.Errorln("Refusing to run migration without trigger file.")
-			return
+			log.Fatalln("Refusing to run migration without trigger file.")
 		}
 
 		var context, err = core.NewContext()
 		if err != nil {
-			waterlog.Errorf("Unable to gather system info: %s\n", err)
-			return
+			log.Fatalln("Unable to gather system info: %s\n", err)
 		}
 
 		var migrations = core.LoadMigrations()
@@ -53,10 +50,10 @@ var migrate = &cmd.CMD{
 			it.Run(context)
 		}
 
-		waterlog.Println("Migrations complete.")
+		log.Println("Migrations complete.")
 
 		if err := core.RemoveTriggerFile(); err != nil {
-			waterlog.Warnf("Failed to remove trigger file %s due to error: %s\n", core.TriggerFile, err)
+			log.Warnf("Failed to remove trigger file %s due to error: %s\n", core.TriggerFile, err)
 		}
 	},
 }

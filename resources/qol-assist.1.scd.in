@@ -41,7 +41,7 @@ over time to keep existing users at feature parity with new installations.
 	seen to have already been applied, it is skipped.
 
 *help (h)*
-	Print the supported command set for the *qol-assist*(1) binary.
+	Print the supported command set for the *qol-assist* binary.
 
 *version (v)*
 	Print the version and license information, before quitting.
@@ -55,7 +55,7 @@ over time to keep existing users at feature parity with new installations.
 
 ## EXIT STATUS
 
-On exit, 0 is returned.
+On success, 0 is returned. A non-zero return code signals a failure.
 
 ## COPYRIGHT
 

@@ -16,7 +16,7 @@ package cli
 
 import (
 	"github.com/DataDrake/cli-ng/cmd"
-	"github.com/DataDrake/waterlog"
+	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/level"
 	"github.com/getsolus/qol-assist/core"
 	"os"
@@ -29,19 +29,18 @@ var trigger = &cmd.CMD{
 	Args:  &struct{}{},
 	Run: func(root *cmd.RootCMD, _ *cmd.CMD) {
 		if gFlags := root.Flags.(*GlobalFlags); gFlags.Debug {
-			waterlog.SetLevel(level.Debug)
+			log.SetLevel(level.Debug)
 		}
 
 		if os.Geteuid() != 0 || os.Getegid() != 0 {
-			waterlog.Fatalln("This command must be run with root privileges.")
-			return
+			log.Fatalln("This command must be run with root privileges.")
 		}
 
 		if err := core.CreateTriggerFile(); err != nil {
-			waterlog.Fatalf("Failed to create trigger file %s: %s\n", core.TriggerFile, err)
-		} else {
-			waterlog.Debugf("Created trigger file at %s\n", core.TriggerFile)
-			waterlog.Println("Migration will run on next boot.")
+			log.Fatalf("Failed to create trigger file %s: %s\n", core.TriggerFile, err)
 		}
+
+		log.Debugf("Created trigger file at %s\n", core.TriggerFile)
+		log.Println("Migration will run on next boot.")
 	},
 }
