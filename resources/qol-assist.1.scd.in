@@ -1,0 +1,74 @@
+qol-assist(1)
+
+# NAME
+
+*qol-assist* - Quality of Life Assistance
+
+# SYNOPSIS
+
+*qol-assist* <command> [global-options]
+
+# DESCRIPTION
+
+*qol-assist* is a system level component to assist in migrations within an
+operating system, with a specific focus on combatting changes specific to
+so-called "rolling release" systems.
+
+*qol-assist* is designed to be an unobtrusive component of the system update
+architecture, running versioned system migrations (such as user group inclusion)
+over time to keep existing users at feature parity with new installations.
+
+# OPTIONS
+
+*-d*, *--debug*
+	Print debug information to the console as the program is running.
+
+# SUBCOMMANDS
+
+*list-users (l) [admin|all|active|system]...*
+	Useful utility to gain insight into how the system views different user accounts. This command takes a single
+	argument to control how the user list is filtered. This can be useful in debugging to determine which accounts the
+	system deems to be administrators, system, or human.
+
+*trigger (t)*
+	This subcommand is typically invoked through the update architecture when the *qol-assist* package itself is
+	updated. Execution of this subcommand will cause a state tracking file to be created to schedule *qol-assist* to
+	start up on the next boot during the early init process.
+
+*migrate (m)*
+	This subcommand will only execute if a trigger file has been created through the aforementioned *trigger*
+	subcommand. Migrations are idempotent, so all migrations that can be executed will be executed. If a migration is
+	seen to have already been applied, it is skipped.
+
+*help (h)*
+	Print the supported command set for the *qol-assist*(1) binary.
+
+*version (v)*
+	Print the version and license information, before quitting.
+
+# FILES
+
+*qol-assist* tracks state through some special files, and will recover in their absence.
+
+*%TRACKDIR%/trigger*
+	If this file exists, *qol-assist migrate* will be started on the next boot during the early init process.
+
+## EXIT STATUS
+
+On exit, 0 is returned.
+
+## COPYRIGHT
+
+Copyright © 2020 Solus Project, License: Apache-2.0
+
+## SEE ALSO
+
+*usysconf*(1)
+
+https://github.com/getsolus/qol-assist
+
+## NOTES
+
+Apache License 2.0
+
+https://www.apache.org/licenses/LICENSE-2.0/
