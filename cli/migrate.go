@@ -40,12 +40,12 @@ var migrate = &cmd.CMD{
 			log.Fatalln("Refusing to run migration without trigger file.")
 		}
 
-		var context, err = core.NewContext()
+		context, err := core.NewContext()
 		if err != nil {
-			log.Fatalln("Unable to gather system info: %s\n", err)
+			log.Fatalf("Unable to gather system info: %s\n", err)
 		}
 
-		var migrations = core.LoadMigrations()
+		migrations := core.LoadMigrations()
 		for _, it := range migrations {
 			it.Run(context)
 		}

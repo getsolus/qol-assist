@@ -32,7 +32,7 @@ var listUsers = &cmd.CMD{
 			log.SetLevel(level.Debug)
 		}
 
-		var context, err = core.NewContext()
+		context, err := core.NewContext()
 		if err != nil {
 			log.Fatalf("Unable to gather system info: %s\n", err)
 		}

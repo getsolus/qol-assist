@@ -72,19 +72,15 @@ func CreateTriggerFile() error {
 }
 
 // RemoveTriggerFile facilitates the removal of the file at TriggerFile
-func RemoveTriggerFile() error {
-	if _, err := os.Stat(TriggerFile); err == nil {
-		if err := os.Remove(TriggerFile); err != nil {
-			return err
-		}
-	} else {
-		return err
+func RemoveTriggerFile() (err error) {
+	if _, err = os.Stat(TriggerFile); err == nil {
+		err = os.Remove(TriggerFile)
 	}
-	return nil
+	return err
 }
 
 // TriggerFileExists is a convenience function to determine if a file exists at TriggerFile
 func TriggerFileExists() bool {
-	var _, err = os.Stat(TriggerFile)
+	_, err := os.Stat(TriggerFile)
 	return err == nil
 }

@@ -29,8 +29,8 @@ type Migration struct {
 	Path string
 
 	Description string        `toml:"description"`
-	UpdateUsers []UpdateUsers `toml:"users-update"`
-	UpdateGroup []UpdateGroup `toml:"group-update"`
+	UpdateUsers []*UpdateUsers `toml:"users-update"`
+	UpdateGroup []*UpdateGroup `toml:"group-update"`
 }
 
 // UpdateUsers is a type of modification that adds a group to a specific set of users
@@ -47,7 +47,7 @@ type UpdateGroup struct {
 
 // LoadMigrations finds migration files in SysDir and UsrDir and attempts to load them
 func LoadMigrations() []Migration {
-	var allMigrations = make([]Migration, 0)
+	var allMigrations []Migration
 
 	if sysFiles, err := ioutil.ReadDir(SysDir); err != nil {
 		log.Warnf("System directory for migrations at %s is unreadable, skipping\n", SysDir)
@@ -72,42 +72,38 @@ func LoadMigrations() []Migration {
 
 func appendMigrationFrom(migrations []Migration, dir string, name string) []Migration {
 	if migration, err := parseMigration(dir, name); err != nil {
-		log.Warnf("    Failed to parse migration %s: %s\n", name, err)
+		log.Warnf("\tFailed to parse migration %s: %s\n", name, err)
 	} else {
-		migrations = append(migrations, migration)
-		log.Debugf("    Loaded migration %s\n", name)
+		migrations = append(migrations, *migration)
+		log.Debugf("\tLoaded migration %s\n", name)
 	}
 	return migrations
 }
 
-func parseMigration(dir string, name string) (Migration, error) {
-	var migration Migration
-
+func parseMigration(dir string, name string) (migration *Migration, err error) {
 	// Read the configuration into the program
-	var path = fmt.Sprintf("%s/%s", dir, name)
-	var cfg, err = readFile(path)
-	if err != nil {
+	path := fmt.Sprintf("%s/%s", dir, name)
+	var cfg []byte
+	if cfg, err = readFile(path); err != nil {
 		return migration, err
 	}
 
 	// Save the configuration into the content structure
-	if err := toml.Unmarshal(cfg, &migration); err != nil {
+	if err = toml.Unmarshal(cfg, &migration); err != nil {
 		return migration, err
 	}
 
 	// Validate the migration so we don't load any invalid data
-	if err := migration.Validate(); err != nil {
-		return migration, err
+	if err := migration.Validate(); err == nil {
+		migration.Name = name
+		migration.Path = path
 	}
 
-	migration.Name = name
-	migration.Path = path
-
-	return migration, nil
+	return migration, err
 }
 
 // Validate checks if a migration contains at least one modification
-func (m Migration) Validate() error {
+func (m *Migration) Validate() error {
 	if len(m.UpdateUsers) == 0 && len(m.UpdateGroup) == 0 {
 		return fmt.Errorf("migrations must contain at least one modification")
 	}
@@ -115,7 +111,7 @@ func (m Migration) Validate() error {
 }
 
 // Run applies the modifications contained in a migration
-func (m Migration) Run(context *Context) {
+func (m *Migration) Run(context *Context) {
 	log.Debugf("Running migration %s...\n", m.Name)
 	for _, task := range m.UpdateUsers {
 		m.updateUsers(context, task)
@@ -125,25 +121,25 @@ func (m Migration) Run(context *Context) {
 	}
 }
 
-func (m Migration) updateUsers(context *Context, task UpdateUsers) {
-	var filtered = context.FilterUsers(task.UserFilters...)
+func (m *Migration) updateUsers(context *Context, task *UpdateUsers) {
+	filtered := context.FilterUsers(task.UserFilters...)
 
 	for _, user := range filtered {
-		if ran, err := context.AddToGroup(user, task.GroupName); err != nil {
-			log.Warnf("    Failed to add group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
+		if ran, err := context.AddToGroup(&user, task.GroupName); err != nil {
+			log.Warnf("\tFailed to add group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
 		} else if ran {
-			log.Debugf("    Successfully added group %s to user %s\n", task.GroupName, user.Name)
+			log.Debugf("\tSuccessfully added group %s to user %s\n", task.GroupName, user.Name)
 		} else {
-			log.Debugf("    User %s already has group %s, skipping\n", user.Name, task.GroupName)
+			log.Debugf("\tUser %s already has group %s, skipping\n", user.Name, task.GroupName)
 		}
 	}
 }
 
-func (m Migration) updateGroup(context *Context, task UpdateGroup) {
-	var byName *gouser.Group = nil
-	var byID *gouser.Group = nil
+func (m *Migration) updateGroup(context *Context, task *UpdateGroup) {
+	var byName *gouser.Group
+	var byID *gouser.Group
 
-	var gid = strconv.Itoa(task.NewGroupID)
+	gid := strconv.Itoa(task.NewGroupID)
 	for _, group := range context.groups {
 		switch {
 		case group.Name == task.GroupName:
@@ -156,19 +152,19 @@ func (m Migration) updateGroup(context *Context, task UpdateGroup) {
 	if byName == nil && byID == nil {
 		// group doesn't exist, create it
 		if err := context.CreateGroup(task.GroupName, gid); err != nil {
-			log.Warnf("    Failed to create group with name %s and GID %s due to error %s\n", task.GroupName, gid, err)
+			log.Warnf("\tFailed to create group with name %s and GID %s due to error %s\n", task.GroupName, gid, err)
 		} else {
-			log.Debugf("    Successfully created group %s with GID %s\n", task.GroupName, gid)
+			log.Debugf("\tSuccessfully created group %s with GID %s\n", task.GroupName, gid)
 		}
 	} else if byName != nil && byID == nil {
 		// group has wrong ID, fix it
 		if err := context.UpdateGroupID(task.GroupName, gid); err != nil {
-			log.Warnf("    Failed to update group with name %s to new GID %s due to error %s\n", task.GroupName, gid, err)
+			log.Warnf("\tFailed to update group with name %s to new GID %s due to error %s\n", task.GroupName, gid, err)
 		} else {
-			log.Debugf("    Successfully updated group with name %s to new GID %s\n", task.GroupName, gid)
+			log.Debugf("\tSuccessfully updated group with name %s to new GID %s\n", task.GroupName, gid)
 		}
 	} else if byName != byID {
 		// there's a group with our desired ID, and it isn't supposed to have it. Fail.
-		log.Warnf("    Another group already exists with desired GID %s, skipping update for group %s\n", gid, task.GroupName)
+		log.Warnf("\tAnother group already exists with desired GID %s, skipping update for group %s\n", gid, task.GroupName)
 	}
 }
