@@ -1,21 +1,16 @@
 qol-assist
 
-.idea/*
-.vscode/*
+.idea/
+.vscode/
 
-_build/*
-build/*
-vendor/*
+build/
+vendor/
 
 /*.service
 /*.1
 
-*.exe
 *.test
 *.prof
 *.log
 
-*.1
-
 *~
-tags
