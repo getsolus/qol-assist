@@ -23,6 +23,6 @@ need, but it will grow in time to be an agnostic project suitable outside of Sol
 
 ## Authors
 
-Copyright © 2020 Solus Project
+Copyright © 2020-2021 Solus Project
 
 `qol-assist` is available under the terms of the `Apache-2.0` license.
