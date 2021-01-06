@@ -19,7 +19,7 @@ SYSTEMDUNITDIR?=$(DESTDIR)/etc/systemd/system
 GO?=go
 GOFLAGS?=
 
-GOSRC!=find . -name '*.go'
+GOSRC!=find . -name "*.go"
 GOSRC+=go.mod go.sum
 
 # Exists in GNUMake but not in NetBSD make and others.
@@ -55,10 +55,10 @@ install: all
 	install -Dm 0644 $(PKGNAME)-migration.service $(SYSTEMDUNITDIR)/$(PKGNAME)-migration.service
 	install -Dm 0644 $(MANPAGE) $(MANDIR)/$(MANPAGE)
 
-RMDIR_IF_EMPTY:=sh -c '\
+RMDIR_IF_EMPTY:=sh -c "\
 if test -d $$0 && ! ls -1qA $$0 | grep -q . ; then \
 	rmdir $$0; \
-fi'
+fi"
 
 uninstall:
 	$(RM) $(BINDIR)/$(PKGNAME)
@@ -82,9 +82,9 @@ vendor: check clean
 	$(GO) mod vendor
 
 package: vendor
-	tar --exclude='.git' \
-    		--exclude='*.tar.gz' \
-    	       	--exclude='examples' \
+	tar --exclude=".git" \
+    		--exclude="*.tar.gz" \
+    	       	--exclude="examples" \
     	       	--exclude="tags" \
     	       	--exclude=".vscode" \
     	       	--exclude=".idea" \
