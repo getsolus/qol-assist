@@ -15,20 +15,19 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	"github.com/DataDrake/waterlog"
 )
 
 // VersionNumber is an externally defined string that contains qol-assist's current version
 var VersionNumber string
 
-var version = &cmd.CMD{
+var version = &cmd.Sub{
 	Name:  "version",
 	Short: "Print the qol-assist version and exit",
 	Alias: "v",
-	Args:  &struct{}{},
-	Run: func(_ *cmd.RootCMD, _ *cmd.CMD) {
-		waterlog.Printf("qol-assist version %v\n\nCopyright © 2017-2020 Solus Project\n", VersionNumber)
+	Run: func(_ *cmd.Root, _ *cmd.Sub) {
+		waterlog.Printf("qol-assist version %v\n\nCopyright © 2017-2021 Solus Project\n", VersionNumber)
 		waterlog.Println("Licensed under the Apache License, Version 2.0")
 	},
 }

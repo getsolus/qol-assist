@@ -15,7 +15,7 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	"github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/format"
 	"github.com/DataDrake/waterlog/level"
@@ -24,22 +24,22 @@ import (
 
 // GlobalFlags contains the flags for the Root command
 type GlobalFlags struct {
-	Debug bool `short:"d" long:"debug"  desc:"Run in debug mode"`
+	Debug bool `short:"d" long:"debug" desc:"Run in debug mode"`
 }
 
 // Root is the main command for this application
-var Root = &cmd.RootCMD{
+var Root = &cmd.Root{
 	Name:  "qol-assist",
 	Short: "QoL assistance to help Solus roll!",
 	Flags: &GlobalFlags{},
 }
 
 func init() {
-	Root.RegisterCMD(&cmd.Help)
-	Root.RegisterCMD(trigger)
-	Root.RegisterCMD(version)
-	Root.RegisterCMD(migrate)
-	Root.RegisterCMD(listUsers)
+	cmd.Register(&cmd.Help)
+	cmd.Register(trigger)
+	cmd.Register(version)
+	cmd.Register(migrate)
+	cmd.Register(listUsers)
 
 	waterlog.SetLevel(level.Info)
 	waterlog.SetFormat(format.Min)

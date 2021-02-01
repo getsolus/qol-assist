@@ -2,6 +2,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DataDrake/cli-ng v1.1.0 h1:HEMNTKdLYWYP2y8CHCxTi1qs6nS13GlRWyAecG9fQCY=
 github.com/DataDrake/cli-ng v1.1.0/go.mod h1:Q8waj7L8BdRhq6DP0ZlFrqtcwkzYHotewVRcfvRuseU=
+github.com/DataDrake/cli-ng/v2 v2.0.1 h1:UB4XkkuY2uzkBkDdj+EFmlDqeQzzwtbZI0bzo1AZluc=
+github.com/DataDrake/cli-ng/v2 v2.0.1/go.mod h1:bU9YaNNWWVq0eIdDsU3TCe9+7Jb398iBBoqee5EiKWQ=
 github.com/DataDrake/waterlog v1.0.5 h1:+c506dboTQh4MoHHwdVtNa9E8K/3qAM/lieke0mH/mE=
 github.com/DataDrake/waterlog v1.0.5/go.mod h1:LUv2H3zT/FSN3SNoK/acxHKEaRjI6d+Sio85BfxNOG8=
 github.com/golang/lint v0.0.0-20181217174547-8f45f776aaf1/go.mod h1:tluoj9z5200jBnyusfRPU2LqT6J+DAorxEvtC7LHB+E=

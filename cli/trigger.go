@@ -15,19 +15,18 @@
 package cli
 
 import (
-	"github.com/DataDrake/cli-ng/cmd"
+	"github.com/DataDrake/cli-ng/v2/cmd"
 	log "github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/level"
 	"github.com/getsolus/qol-assist/core"
 	"os"
 )
 
-var trigger = &cmd.CMD{
+var trigger = &cmd.Sub{
 	Name:  "trigger",
 	Short: "Schedule migration on next boot",
 	Alias: "t",
-	Args:  &struct{}{},
-	Run: func(root *cmd.RootCMD, _ *cmd.CMD) {
+	Run: func(root *cmd.Root, _ *cmd.Sub) {
 		if gFlags := root.Flags.(*GlobalFlags); gFlags.Debug {
 			log.SetLevel(level.Debug)
 		}
