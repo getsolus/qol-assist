@@ -28,7 +28,7 @@ type Migration struct {
 	Name string
 	Path string
 
-	Description string        `toml:"description"`
+	Description string         `toml:"description"`
 	UpdateUsers []*UpdateUsers `toml:"users-update"`
 	UpdateGroup []*UpdateGroup `toml:"group-update"`
 }
