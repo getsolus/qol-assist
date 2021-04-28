@@ -88,16 +88,17 @@ func (c *Context) FilterUsers(filters ...string) (filtered []User) {
 // AddToGroup adds a User to a preexisting group. Returns whether or not the modification ran, along with an error in
 // case something went wrong
 func (c *Context) AddToGroup(user *User, group string) (ran bool, err error) {
-	if !contains(user.Groups, group) {
-		cmd := exec.Command("usermod", "-aG", group, user.Name)
-		if err = cmd.Run(); err != nil {
-			return false, err
-		}
-
-		user.Groups = append(user.Groups, group)
-		ran = true
+	if contains(user.Groups, group) {
+		return
 	}
-	return ran, err
+
+	cmd := exec.Command("usermod", "-aG", group, user.Name)
+	ran = true
+	if err = cmd.Run(); err == nil {
+		user.Groups = append(user.Groups, group)
+	}
+
+	return
 }
 
 // CreateGroup creates a new group with the given name and ID
@@ -142,16 +143,16 @@ func (c *Context) populateGroups() (err error) {
 			break
 		}
 
-		group, err := gouser.LookupGroup(C.GoString(gr.gr_name))
-		if err != nil {
-			return err
+		var group *gouser.Group
+		if group, err = gouser.LookupGroup(C.GoString(gr.gr_name)); err != nil {
+			break
 		}
 
 		c.groups = append(c.groups, *group)
 	}
 	C.endgrent()
 
-	return err
+	return
 }
 
 func (c *Context) populateUsers() error {

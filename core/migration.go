@@ -20,6 +20,7 @@ import (
 	"github.com/DataDrake/waterlog"
 	"io/ioutil"
 	gouser "os/user"
+	"path/filepath"
 	"strconv"
 )
 
@@ -82,7 +83,7 @@ func appendMigrationFrom(migrations []Migration, dir string, name string) []Migr
 
 func parseMigration(dir string, name string) (migration *Migration, err error) {
 	// Read the configuration into the program
-	path := fmt.Sprintf("%s/%s", dir, name)
+	path := filepath.Join(dir, name)
 	var cfg []byte
 	if cfg, err = readFile(path); err != nil {
 		return migration, err
