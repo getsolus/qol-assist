@@ -17,7 +17,7 @@ package core
 import (
 	"fmt"
 	"github.com/BurntSushi/toml"
-	log "github.com/DataDrake/waterlog"
+	"github.com/DataDrake/waterlog"
 	"io/ioutil"
 	gouser "os/user"
 	"strconv"
@@ -50,18 +50,18 @@ func LoadMigrations() []Migration {
 	var allMigrations []Migration
 
 	if sysFiles, err := ioutil.ReadDir(SysDir); err != nil {
-		log.Warnf("System directory for migrations at %s is unreadable, skipping\n", SysDir)
+		waterlog.Warnf("System directory for migrations at %s is unreadable, skipping\n", SysDir)
 	} else {
-		log.Debugf("Loading migrations from system directory %s...\n", SysDir)
+		waterlog.Debugf("Loading migrations from system directory %s...\n", SysDir)
 		for _, it := range sysFiles {
 			allMigrations = appendMigrationFrom(allMigrations, SysDir, it.Name())
 		}
 	}
 
 	if usrFiles, err := ioutil.ReadDir(UsrDir); err != nil {
-		log.Warnf("User directory for migrations at %s is unreadable, skipping\n", UsrDir)
+		waterlog.Warnf("User directory for migrations at %s is unreadable, skipping\n", UsrDir)
 	} else {
-		log.Debugf("Loading migrations from user directory %s...\n", UsrDir)
+		waterlog.Debugf("Loading migrations from user directory %s...\n", UsrDir)
 		for _, it := range usrFiles {
 			allMigrations = appendMigrationFrom(allMigrations, UsrDir, it.Name())
 		}
@@ -72,10 +72,10 @@ func LoadMigrations() []Migration {
 
 func appendMigrationFrom(migrations []Migration, dir string, name string) []Migration {
 	if migration, err := parseMigration(dir, name); err != nil {
-		log.Warnf("\tFailed to parse migration %s: %s\n", name, err)
+		waterlog.Warnf("\tFailed to parse migration %s: %s\n", name, err)
 	} else {
 		migrations = append(migrations, *migration)
-		log.Debugf("\tLoaded migration %s\n", name)
+		waterlog.Debugf("\tLoaded migration %s\n", name)
 	}
 	return migrations
 }
@@ -112,7 +112,7 @@ func (m *Migration) Validate() error {
 
 // Run applies the modifications contained in a migration
 func (m *Migration) Run(context *Context) {
-	log.Debugf("Running migration %s...\n", m.Name)
+	waterlog.Debugf("Running migration %s...\n", m.Name)
 	for _, task := range m.UpdateUsers {
 		m.updateUsers(context, task)
 	}
@@ -126,11 +126,11 @@ func (m *Migration) updateUsers(context *Context, task *UpdateUsers) {
 
 	for _, user := range filtered {
 		if ran, err := context.AddToGroup(&user, task.GroupName); err != nil {
-			log.Warnf("\tFailed to add group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
+			waterlog.Warnf("\tFailed to add group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
 		} else if ran {
-			log.Debugf("\tSuccessfully added group %s to user %s\n", task.GroupName, user.Name)
+			waterlog.Debugf("\tSuccessfully added group %s to user %s\n", task.GroupName, user.Name)
 		} else {
-			log.Debugf("\tUser %s already has group %s, skipping\n", user.Name, task.GroupName)
+			waterlog.Debugf("\tUser %s already has group %s, skipping\n", user.Name, task.GroupName)
 		}
 	}
 }
@@ -152,19 +152,19 @@ func (m *Migration) updateGroup(context *Context, task *UpdateGroup) {
 	if byName == nil && byID == nil {
 		// group doesn't exist, create it
 		if err := context.CreateGroup(task.GroupName, gid); err != nil {
-			log.Warnf("\tFailed to create group with name %s and GID %s due to error %s\n", task.GroupName, gid, err)
+			waterlog.Warnf("\tFailed to create group with name %s and GID %s due to error %s\n", task.GroupName, gid, err)
 		} else {
-			log.Debugf("\tSuccessfully created group %s with GID %s\n", task.GroupName, gid)
+			waterlog.Debugf("\tSuccessfully created group %s with GID %s\n", task.GroupName, gid)
 		}
 	} else if byName != nil && byID == nil {
 		// group has wrong ID, fix it
 		if err := context.UpdateGroupID(task.GroupName, gid); err != nil {
-			log.Warnf("\tFailed to update group with name %s to new GID %s due to error %s\n", task.GroupName, gid, err)
+			waterlog.Warnf("\tFailed to update group with name %s to new GID %s due to error %s\n", task.GroupName, gid, err)
 		} else {
-			log.Debugf("\tSuccessfully updated group with name %s to new GID %s\n", task.GroupName, gid)
+			waterlog.Debugf("\tSuccessfully updated group with name %s to new GID %s\n", task.GroupName, gid)
 		}
 	} else if byName != byID {
 		// there's a group with our desired ID, and it isn't supposed to have it. Fail.
-		log.Warnf("\tAnother group already exists with desired GID %s, skipping update for group %s\n", gid, task.GroupName)
+		waterlog.Warnf("\tAnother group already exists with desired GID %s, skipping update for group %s\n", gid, task.GroupName)
 	}
 }

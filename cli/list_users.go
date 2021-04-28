@@ -16,7 +16,7 @@ package cli
 
 import (
 	"github.com/DataDrake/cli-ng/v2/cmd"
-	log "github.com/DataDrake/waterlog"
+	"github.com/DataDrake/waterlog"
 	"github.com/DataDrake/waterlog/level"
 	"github.com/getsolus/qol-assist/core"
 	"strings"
@@ -29,16 +29,16 @@ var listUsers = &cmd.Sub{
 	Args:  &ListArgs{},
 	Run: func(root *cmd.Root, command *cmd.Sub) {
 		if gFlags := root.Flags.(*GlobalFlags); gFlags.Debug {
-			log.SetLevel(level.Debug)
+			waterlog.SetLevel(level.Debug)
 		}
 
 		context, err := core.NewContext()
 		if err != nil {
-			log.Fatalf("Unable to gather system info: %s\n", err)
+			waterlog.Fatalf("Unable to gather system info: %s\n", err)
 		}
 
 		for _, it := range context.FilterUsers(command.Args.(*ListArgs).Filter) {
-			log.Printf("User: %s (%s)\n", it.Name, strings.Join(it.Groups, ":"))
+			waterlog.Printf("User: %s (%s)\n", it.Name, strings.Join(it.Groups, ":"))
 		}
 	},
 }

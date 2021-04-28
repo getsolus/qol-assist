@@ -21,7 +21,7 @@ import "C"
 
 import (
 	"fmt"
-	log "github.com/DataDrake/waterlog"
+	"github.com/DataDrake/waterlog"
 	"os/exec"
 	gouser "os/user"
 	"strconv"
@@ -49,20 +49,20 @@ type User struct {
 // NewContext creates an initialized instance of a Context object
 func NewContext() (ctx *Context, err error) {
 	ctx = &Context{}
-	log.Debugln("Gathering system info...")
+	waterlog.Debugln("Gathering system info...")
 
 	ctx.shells = activeShells()
-	log.Debugln("\tGathered active shells from /etc/shells")
+	waterlog.Debugln("\tGathered active shells from /etc/shells")
 
 	if err = ctx.populateGroups(); err != nil {
 		return ctx, fmt.Errorf("failed to obtain groups from /etc/groups: %s", err)
 	}
-	log.Debugln("\tGathered groups from /etc/groups")
+	waterlog.Debugln("\tGathered groups from /etc/groups")
 
 	if err = ctx.populateUsers(); err != nil {
 		return ctx, fmt.Errorf("failed to obtain users from /etc/passwd: %s", err)
 	}
-	log.Debugln("\tGathered users from /etc/passwd")
+	waterlog.Debugln("\tGathered users from /etc/passwd")
 
 	return ctx, err
 }
