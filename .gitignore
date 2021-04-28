@@ -1,1 +1,16 @@
-/build/
+qol-assist
+
+.idea/
+.vscode/
+
+build/
+vendor/
+
+/*.service
+/*.1
+
+*.test
+*.prof
+*.log
+
+*~

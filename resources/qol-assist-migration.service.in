@@ -1,11 +1,11 @@
 [Unit]
 Description=QoL Migration Service
-ConditionPathExists=@QOL_TRIGGER_FILE@
+ConditionPathExists=@TRACKDIR@/trigger
 After=systemd-sysusers.service
 
 [Service]
 Type=oneshot
-ExecStart=@SBINDIR@/qol-assist migrate
+ExecStart=@BINDIR@/qol-assist migrate
 
 [Install]
 WantedBy=sysinit.target
