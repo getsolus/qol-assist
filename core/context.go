@@ -77,7 +77,7 @@ func (c *Context) FilterUsers(filters ...string) (filtered []User) {
 			fallthrough
 		case !it.IsActive && contains(filters, "system"):
 			fallthrough
-		case (it.IsRoot || it.IsAdmin) && contains(filters, "admin"):
+		case it.IsAdmin && contains(filters, "admin"):
 			filtered = append(filtered, it)
 		}
 	}
