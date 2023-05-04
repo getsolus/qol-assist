@@ -101,6 +101,27 @@ func (c *Context) AddToGroup(user *User, group string) (ran bool, err error) {
 	return
 }
 
+// RemoveFromGroup removes a User from a preexisting group. Returns whether or not the modification ran, along with an error in
+// case something went wrong
+func (c *Context) RemoveFromGroup(user *User, group string) (ran bool, err error) {
+	if !contains(user.Groups, group) {
+		return
+	}
+
+	cmd := exec.Command("gpasswd", "--delete", user.Name, group)
+	ran = true
+	if err = cmd.Run(); err == nil {
+		for i, v := range user.Groups {
+			if v == group {
+				user.Groups = append(user.Groups[:i], user.Groups[i+1:]...)
+				break
+			}
+		}
+	}
+
+	return
+}
+
 // CreateGroup creates a new group with the given name and ID
 func (c *Context) CreateGroup(name string, id string) error {
 	cmd := exec.Command("groupadd", "-g", id, name)
@@ -112,6 +133,23 @@ func (c *Context) CreateGroup(name string, id string) error {
 		Name: name,
 		Gid:  id,
 	})
+
+	return nil
+}
+
+// DeleteGroup deletes a preexisting group with the given name and ID
+func (c *Context) DeleteGroup(name string) error {
+	cmd := exec.Command("groupdel", name)
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	// Remove group from c.groups
+	for i, v := range c.groups {
+		if v.Name == name {
+			c.groups = append(c.groups[0:i], c.groups[i+1:]...)
+		}
+	}
 
 	return nil
 }

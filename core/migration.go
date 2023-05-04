@@ -32,6 +32,8 @@ type Migration struct {
 	Description string         `toml:"description"`
 	UpdateUsers []*UpdateUsers `toml:"users-update"`
 	UpdateGroup []*UpdateGroup `toml:"group-update"`
+	RemoveUsers []*RemoveUsers `toml:"users-remove"`
+	RemoveGroup []*RemoveGroup `toml:"group-delete"`
 }
 
 // UpdateUsers is a type of modification that adds a group to a specific set of users
@@ -44,6 +46,17 @@ type UpdateUsers struct {
 type UpdateGroup struct {
 	GroupName  string `toml:"name"`
 	NewGroupID int    `toml:"id"`
+}
+
+// RemoveUsers is a type of modification that removes a group from a specific set of users
+type RemoveUsers struct {
+	UserFilters []string `toml:"only"`
+	GroupName   string   `toml:"group"`
+}
+
+// RemoveGroup is a type of modification that attempts to delete a preexisting group from the given name
+type RemoveGroup struct {
+	GroupName  string `toml:"name"`
 }
 
 // LoadMigrations finds migration files in SysDir and UsrDir and attempts to load them
@@ -120,6 +133,12 @@ func (m *Migration) Run(context *Context) {
 	for _, task := range m.UpdateGroup {
 		m.updateGroup(context, task)
 	}
+	for _, task := range m.RemoveUsers {
+		 m.removeUsers(context, task)
+	 }
+	for _, task := range m.RemoveGroup {
+		  m.removeGroup(context, task)
+	}
 }
 
 func (m *Migration) updateUsers(context *Context, task *UpdateUsers) {
@@ -167,5 +186,42 @@ func (m *Migration) updateGroup(context *Context, task *UpdateGroup) {
 	} else if byName != byID {
 		// there's a group with our desired ID, and it isn't supposed to have it. Fail.
 		waterlog.Warnf("\tAnother group already exists with desired GID %s, skipping update for group %s\n", gid, task.GroupName)
+	}
+}
+
+func (m *Migration) removeUsers(context *Context, task *RemoveUsers) {
+	filtered := context.FilterUsers(task.UserFilters...)
+
+	for _, user := range filtered {
+		if ran, err := context.RemoveFromGroup(&user, task.GroupName); err != nil {
+			waterlog.Warnf("\tFailed to remove group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
+		} else if ran {
+			waterlog.Debugf("\tSuccessfully removed group %s from user %s\n", task.GroupName, user.Name)
+		} else {
+			waterlog.Debugf("\tUser %s is already not a part of group %s, skipping\n", user.Name, task.GroupName)
+		}
+	}
+}
+
+func (m *Migration) removeGroup(context *Context, task *RemoveGroup) {
+	var byName *gouser.Group
+
+	for _, group := range context.groups {
+		if group.Name == task.GroupName {
+			byName = &group
+			break
+		}
+	}
+
+	// Group name matches
+	if byName != nil {
+		if err := context.DeleteGroup(task.GroupName); err != nil {
+			waterlog.Warnf("\tFailed to remove group %s from system due to error %s\n", task.GroupName, err)
+		} else {
+			waterlog.Debugf("\tSuccessfully removed group %s from the system\n", task.GroupName)
+		}
+	// Group doesn't exist
+	} else if byName == nil {
+		waterlog.Debugf("\tGroup %s doesn't exist, skipping\n", task.GroupName)
 	}
 }
