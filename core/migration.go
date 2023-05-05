@@ -56,7 +56,7 @@ type RemoveUsers struct {
 
 // RemoveGroup is a type of modification that attempts to delete a preexisting group from the given name
 type RemoveGroup struct {
-	GroupName  string `toml:"name"`
+	GroupName string `toml:"name"`
 }
 
 // LoadMigrations finds migration files in SysDir and UsrDir and attempts to load them
@@ -134,10 +134,10 @@ func (m *Migration) Run(context *Context) {
 		m.updateGroup(context, task)
 	}
 	for _, task := range m.RemoveUsers {
-		 m.removeUsers(context, task)
-	 }
+		m.removeUsers(context, task)
+	}
 	for _, task := range m.RemoveGroup {
-		  m.removeGroup(context, task)
+		m.removeGroup(context, task)
 	}
 }
 
@@ -145,6 +145,7 @@ func (m *Migration) updateUsers(context *Context, task *UpdateUsers) {
 	filtered := context.FilterUsers(task.UserFilters...)
 
 	for _, user := range filtered {
+		user := user
 		if ran, err := context.AddToGroup(&user, task.GroupName); err != nil {
 			waterlog.Warnf("\tFailed to add group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
 		} else if ran {
@@ -163,8 +164,10 @@ func (m *Migration) updateGroup(context *Context, task *UpdateGroup) {
 	for _, group := range context.groups {
 		switch {
 		case group.Name == task.GroupName:
+			group := group
 			byName = &group
 		case group.Gid == strconv.Itoa(task.NewGroupID):
+			group := group
 			byID = &group
 		}
 	}
@@ -193,6 +196,7 @@ func (m *Migration) removeUsers(context *Context, task *RemoveUsers) {
 	filtered := context.FilterUsers(task.UserFilters...)
 
 	for _, user := range filtered {
+		user := user
 		if ran, err := context.RemoveFromGroup(&user, task.GroupName); err != nil {
 			waterlog.Warnf("\tFailed to remove group %s to user %s due to error: %s\n", task.GroupName, user.Name, err)
 		} else if ran {
@@ -208,6 +212,7 @@ func (m *Migration) removeGroup(context *Context, task *RemoveGroup) {
 
 	for _, group := range context.groups {
 		if group.Name == task.GroupName {
+			group := group
 			byName = &group
 			break
 		}
