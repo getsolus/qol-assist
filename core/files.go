@@ -33,7 +33,7 @@ var (
 
 func createDir(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		if err := os.Mkdir(path, 0644); err != nil {
+		if err := os.Mkdir(path, 0750); err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -44,7 +44,7 @@ func createDir(path string) error {
 
 func createFile(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		if _, err := os.Create(path); err != nil {
+		if _, err := os.Create(filepath.Clean(path)); err != nil {
 			return err
 		}
 	} else if err != nil {
