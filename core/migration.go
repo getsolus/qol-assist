@@ -34,6 +34,7 @@ type Migration struct {
 	UpdateGroup []*UpdateGroup `toml:"group-update"`
 	RemoveUsers []*RemoveUsers `toml:"users-remove"`
 	RemoveGroup []*RemoveGroup `toml:"group-delete"`
+	DeleteUsers []*DeleteUsers `toml:"users-delete"`
 }
 
 // UpdateUsers is a type of modification that adds a group to a specific set of users
@@ -57,6 +58,11 @@ type RemoveUsers struct {
 // RemoveGroup is a type of modification that attempts to delete a preexisting group from the given name
 type RemoveGroup struct {
 	GroupName string `toml:"name"`
+}
+
+// DeleteUser is a type of modification that attempts to delete a preexisting user from the system
+type DeleteUsers struct {
+	UserName string `toml:"name"`
 }
 
 // LoadMigrations finds migration files in SysDir and UsrDir and attempts to load them
@@ -138,6 +144,9 @@ func (m *Migration) Run(context *Context) {
 	}
 	for _, task := range m.RemoveGroup {
 		m.removeGroup(context, task)
+	}
+	for _, task := range m.DeleteUsers {
+		m.deleteUsers(context, task)
 	}
 }
 
@@ -225,8 +234,30 @@ func (m *Migration) removeGroup(context *Context, task *RemoveGroup) {
 		} else {
 			waterlog.Debugf("\tSuccessfully removed group %s from the system\n", task.GroupName)
 		}
-	// Group doesn't exist
 	} else if byName == nil {
 		waterlog.Debugf("\tGroup %s doesn't exist, skipping\n", task.GroupName)
+	}
+}
+
+func (m *Migration) deleteUsers(context *Context, task *DeleteUsers) {
+
+	var byName *User
+
+	for _, user := range context.users {
+		if user.Name == task.UserName {
+			user := user
+			byName = &user
+			if ran, err := context.DeleteUser(&user); err != nil {
+				waterlog.Warnf("\tFailed to delete user %s from system due to error: %s\n", task.UserName, err)
+			} else if ran {
+				waterlog.Debugf("\tSuccessfully deleted user %s from the system\n", task.UserName)
+			} else {
+				waterlog.Warnf("\tUnknown error occured when deleting user %s from system, err %s\n", task.UserName, err)
+			}
+		}
+	}
+
+	if byName == nil {
+		waterlog.Debugf("\tUser %s doesn't exist on the system, skipping\n", task.UserName)
 	}
 }

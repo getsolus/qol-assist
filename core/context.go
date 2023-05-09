@@ -137,7 +137,7 @@ func (c *Context) CreateGroup(name string, id string) error {
 	return nil
 }
 
-// DeleteGroup deletes a preexisting group with the given name and ID
+// DeleteGroup deletes a preexisting group with the given name
 func (c *Context) DeleteGroup(name string) error {
 	cmd := exec.Command("groupdel", name)
 	if err := cmd.Run(); err != nil {
@@ -152,6 +152,21 @@ func (c *Context) DeleteGroup(name string) error {
 	}
 
 	return nil
+}
+
+// DeleteUser deletes a preexisting user with the given user
+func (c *Context) DeleteUser(user *User) (ran bool, err error) {
+	cmd := exec.Command("userdel", "-r", "-f", user.Name)
+	ran = true
+	if err := cmd.Run(); err == nil {
+		// remove user from c.users
+		for i, v := range c.users {
+			if v.Name == user.Name {
+				c.users = append(c.users[0:i], c.users[i+1:]...)
+			}
+		}
+	}
+	return
 }
 
 // UpdateGroupID finds a group with the given name and changes its ID to the given ID
