@@ -85,6 +85,44 @@ func (c *Context) FilterUsers(filters ...string) (filtered []User) {
 	return filtered
 }
 
+// GetRootUser gets the root user
+func (c *Context) GetRootUser() User {
+	for _, user := range c.users {
+		if user.IsRoot {
+			return user
+		}
+	}
+
+	return User{}
+}
+
+// GetUsersInGroup returns all users that are in the given group
+func (c *Context) GetUsersInGroup(group string) (users []User) {
+	for _, user := range c.users {
+		if c.UserInGroup(user, group) {
+			users = append(users, user)
+		}
+	}
+
+	return
+}
+
+// AddSubUids adds a range of subids for a user. Returns an error if something went wrong
+func (c *Context) AddSubUids(user *User, rangeStart, rangeEnd int) error {
+	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeEnd)
+	cmd := exec.Command("usermod", "--add-subuids", idRange, user.Name)
+
+	return cmd.Run()
+}
+
+// AddSubGids adds a range of subids for a user. Returns an error if something went wrong
+func (c *Context) AddSubGids(user *User, rangeStart, rangeEnd int) error {
+	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeEnd)
+	cmd := exec.Command("usermod", "--add-subgids", idRange, user.Name)
+
+	return cmd.Run()
+}
+
 // AddToGroup adds a User to a preexisting group. Returns whether or not the modification ran, along with an error in
 // case something went wrong
 func (c *Context) AddToGroup(user *User, group string) (ran bool, err error) {
@@ -184,6 +222,11 @@ func (c *Context) UpdateGroupID(name string, id string) error {
 	}
 
 	return nil
+}
+
+// UserInGroup returns whether a user is in a particular group
+func (c *Context) UserInGroup(user User, group string) bool {
+	return contains(user.Groups, group)
 }
 
 func (c *Context) populateGroups() (err error) {
