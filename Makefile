@@ -7,7 +7,7 @@ MODULE=github.com/getsolus/qol-assist
 MANPAGE=$(PKGNAME).1
 SERVICE=$(PKGNAME)-migration.service
 
-VERSION="1.0.0"
+VERSION="1.1.0"
 
 PREFIX?=/usr/local
 BINDIR?=$(DESTDIR)$(PREFIX)/bin
