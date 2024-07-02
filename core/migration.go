@@ -15,13 +15,16 @@
 package core
 
 import (
+	"errors"
 	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/DataDrake/waterlog"
 	"io/ioutil"
+	"os"
 	gouser "os/user"
 	"path/filepath"
 	"strconv"
+
+	"github.com/BurntSushi/toml"
+	"github.com/DataDrake/waterlog"
 )
 
 // Migration contains the information about a migration, including where it is on the system and its requested system modifications
@@ -30,11 +33,19 @@ type Migration struct {
 	Path string
 
 	Description string         `toml:"description"`
+	AddSubIds   []*AddSubIds   `toml:"add-subids"`
 	UpdateUsers []*UpdateUsers `toml:"users-update"`
 	UpdateGroup []*UpdateGroup `toml:"group-update"`
 	RemoveUsers []*RemoveUsers `toml:"users-remove"`
 	RemoveGroup []*RemoveGroup `toml:"group-delete"`
 	DeleteUsers []*DeleteUsers `toml:"users-delete"`
+}
+
+// AddSubIds is a type of modification that adds subuids and subgids to a specific set of users
+type AddSubIds struct {
+	GroupName  string `toml:"group"`
+	RangeStart int    `toml:"range-start"`
+	RangeEnd   int    `toml:"range-end"`
 }
 
 // UpdateUsers is a type of modification that adds a group to a specific set of users
@@ -133,6 +144,9 @@ func (m *Migration) Validate() error {
 // Run applies the modifications contained in a migration
 func (m *Migration) Run(context *Context) {
 	waterlog.Debugf("Running migration %s...\n", m.Name)
+	for _, task := range m.AddSubIds {
+		m.addSubIds(context, task)
+	}
 	for _, task := range m.UpdateUsers {
 		m.updateUsers(context, task)
 	}
@@ -147,6 +161,75 @@ func (m *Migration) Run(context *Context) {
 	}
 	for _, task := range m.DeleteUsers {
 		m.deleteUsers(context, task)
+	}
+}
+
+func (m *Migration) addSubIds(context *Context, task *AddSubIds) {
+	users := context.GetUsersInGroup(task.GroupName)
+	users = append(users, context.GetRootUser())
+
+	m.createSubUidFile(context, task, users)
+	m.createSubGidFile(context, task, users)
+}
+
+func createFileIfNotExists(path string) (bool, error) {
+	fh, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
+
+	if err != nil {
+		if errors.Is(err, os.ErrExist) {
+			waterlog.Debugf("\t%s already exists, skipping", path)
+			// The file already existing isn't an error mode for us,
+			// so don't propagate the error.
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	fh.Close()
+
+	return true, nil
+}
+
+func (m *Migration) createSubUidFile(context *Context, task *AddSubIds, users []User) {
+	created, err := createFileIfNotExists("/etc/subuid")
+
+	if !created {
+		if err != nil {
+			waterlog.Warnf("\tUnable to create /etc/subuid due to error: %s\n", err)
+		}
+
+		return
+	}
+
+	for _, user := range users {
+		if err := context.AddSubUids(&user, task.RangeStart, task.RangeEnd); err != nil {
+			waterlog.Warnf("\tFailed to add subuids to user %s due to error: %s\n", user.Name, err)
+			return
+		}
+
+		waterlog.Debugf("\tSuccessfully added subuids to user %s\n", user.Name)
+	}
+}
+
+func (m *Migration) createSubGidFile(context *Context, task *AddSubIds, users []User) {
+	created, err := createFileIfNotExists("/etc/subgid")
+
+	if !created {
+		if err != nil {
+			waterlog.Warnf("\tUnable to create /etc/subgid due to error: %s\n", err)
+		}
+
+		return
+	}
+
+	for _, user := range users {
+		if err := context.AddSubGids(&user, task.RangeStart, task.RangeEnd); err != nil {
+			waterlog.Warnf("\tFailed to add subgids to user %s due to error: %s\n", user.Name, err)
+			return
+		}
+
+		waterlog.Debugf("\tSuccessfully added subgids to user %s\n", user.Name)
 	}
 }
 
