@@ -38,7 +38,7 @@ var listUsers = &cmd.Sub{
 		}
 
 		for _, it := range context.FilterUsers(command.Args.(*ListArgs).Filter) {
-			waterlog.Printf("User: %s (%s)\n", it.Name, strings.Join(it.Groups, ":"))
+			waterlog.Printf("User: %s:%s (%s)\n", it.Name, it.UID, strings.Join(it.Groups, ":"))
 		}
 	},
 }
