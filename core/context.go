@@ -110,7 +110,15 @@ func (c *Context) GetUsersInGroup(group string) (users []User) {
 
 // AddSubUids adds a range of subids for a user. Returns an error if something went wrong
 func (c *Context) AddSubUids(user *User, rangeStart, rangeEnd int) error {
-	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeEnd)
+	uid, err := strconv.Atoi(user.UID)
+	if err != nil {
+		return err
+	}
+
+	// https://rootlesscontaine.rs/how-it-works/userns/
+	adjustedRangeStart := (uid + 1) * rangeStart
+
+	idRange := fmt.Sprintf("%d-%d", adjustedRangeStart, rangeEnd)
 	cmd := exec.Command("usermod", "--add-subuids", idRange, user.Name)
 
 	return cmd.Run()
@@ -118,7 +126,15 @@ func (c *Context) AddSubUids(user *User, rangeStart, rangeEnd int) error {
 
 // AddSubGids adds a range of subids for a user. Returns an error if something went wrong
 func (c *Context) AddSubGids(user *User, rangeStart, rangeEnd int) error {
-	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeEnd)
+	uid, err := strconv.Atoi(user.UID)
+	if err != nil {
+		return err
+	}
+
+	// https://rootlesscontaine.rs/how-it-works/userns/
+	adjustedRangeStart := (uid + 1) * rangeStart
+
+	idRange := fmt.Sprintf("%d-%d", adjustedRangeStart, rangeEnd)
 	cmd := exec.Command("usermod", "--add-subgids", idRange, user.Name)
 
 	return cmd.Run()
