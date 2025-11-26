@@ -44,6 +44,7 @@ type User struct {
 	IsActive bool
 	IsRoot   bool
 	IsAdmin  bool
+	UID      string
 }
 
 // NewContext creates an initialized instance of a Context object
@@ -279,6 +280,7 @@ func (c *Context) populateUsers() error {
 			IsActive: uid >= minimumUID && contains(c.shells, C.GoString(pw.pw_shell)),
 			IsRoot:   uid == 0 && int(pw.pw_gid) == 0,
 			IsAdmin:  contains(groupNames, wheelGroup),
+			UID:      strconv.Itoa(uid),
 		})
 	}
 	C.endpwent()
