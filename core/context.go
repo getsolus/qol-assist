@@ -21,10 +21,12 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/DataDrake/waterlog"
 	"os/exec"
 	gouser "os/user"
+	"slices"
 	"strconv"
+
+	"github.com/DataDrake/waterlog"
 )
 
 const minimumUID = 1000
@@ -71,13 +73,13 @@ func NewContext() (ctx *Context, err error) {
 func (c *Context) FilterUsers(filters ...string) (filtered []User) {
 	for _, it := range c.users {
 		switch {
-		case contains(filters, "all"):
+		case slices.Contains(filters, "all"):
 			fallthrough
-		case it.IsActive && contains(filters, "active"):
+		case it.IsActive && slices.Contains(filters, "active"):
 			fallthrough
-		case !it.IsActive && contains(filters, "system"):
+		case !it.IsActive && slices.Contains(filters, "system"):
 			fallthrough
-		case it.IsAdmin && contains(filters, "admin"):
+		case it.IsAdmin && slices.Contains(filters, "admin"):
 			filtered = append(filtered, it)
 		}
 	}
@@ -126,7 +128,7 @@ func (c *Context) AddSubGids(user *User, rangeStart, rangeEnd int) error {
 // AddToGroup adds a User to a preexisting group. Returns whether or not the modification ran, along with an error in
 // case something went wrong
 func (c *Context) AddToGroup(user *User, group string) (ran bool, err error) {
-	if contains(user.Groups, group) {
+	if slices.Contains(user.Groups, group) {
 		return
 	}
 
@@ -142,7 +144,7 @@ func (c *Context) AddToGroup(user *User, group string) (ran bool, err error) {
 // RemoveFromGroup removes a User from a preexisting group. Returns whether or not the modification ran, along with an error in
 // case something went wrong
 func (c *Context) RemoveFromGroup(user *User, group string) (ran bool, err error) {
-	if !contains(user.Groups, group) {
+	if !slices.Contains(user.Groups, group) {
 		return
 	}
 
@@ -226,7 +228,7 @@ func (c *Context) UpdateGroupID(name string, id string) error {
 
 // UserInGroup returns whether a user is in a particular group
 func (c *Context) UserInGroup(user User, group string) bool {
-	return contains(user.Groups, group)
+	return slices.Contains(user.Groups, group)
 }
 
 func (c *Context) populateGroups() (err error) {
@@ -276,7 +278,7 @@ func (c *Context) populateUsers() error {
 		c.users = append(c.users, User{
 			Name:     C.GoString(pw.pw_name),
 			Groups:   groupNames,
-			IsActive: uid >= minimumUID && contains(c.shells, C.GoString(pw.pw_shell)),
+			IsActive: uid >= minimumUID && slices.Contains(c.shells, C.GoString(pw.pw_shell)),
 			IsRoot:   uid == 0 && int(pw.pw_gid) == 0,
 			IsAdmin:  anyInSlice(groupNames, wheelGroup),
 		})
@@ -288,7 +290,7 @@ func (c *Context) populateUsers() error {
 
 func (c *Context) groupNamesFromGUIDs(guidStrings []string) (groupNames []string) {
 	for _, group := range c.groups {
-		if contains(guidStrings, group.Gid) {
+		if slices.Contains(guidStrings, group.Gid) {
 			groupNames = append(groupNames, group.Name)
 		}
 	}
@@ -307,15 +309,6 @@ func activeShells() (shells []string) {
 	C.endusershell()
 
 	return shells
-}
-
-func contains(list []string, item string) bool {
-	for _, it := range list {
-		if it == item {
-			return true
-		}
-	}
-	return false
 }
 
 func anyInSlice(a, b []string) bool {
