@@ -28,7 +28,7 @@ import (
 )
 
 const minimumUID = 1000
-const wheelGroup = "sudo"
+var wheelGroup = []string{"sudo", "wheel"}
 
 // Context contains contextual system data, such as groups, users, and active shells, along with paths to certain binaries
 type Context struct {
@@ -278,7 +278,7 @@ func (c *Context) populateUsers() error {
 			Groups:   groupNames,
 			IsActive: uid >= minimumUID && contains(c.shells, C.GoString(pw.pw_shell)),
 			IsRoot:   uid == 0 && int(pw.pw_gid) == 0,
-			IsAdmin:  contains(groupNames, wheelGroup),
+			IsAdmin:  anyInSlice(groupNames, wheelGroup),
 		})
 	}
 	C.endpwent()
@@ -316,4 +316,13 @@ func contains(list []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func anyInSlice(a, b []string) bool {
+    for _, x := range a {
+        if slices.Contains(b, x) {
+                return true
+            }
+    }
+    return false
 }
