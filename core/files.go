@@ -15,9 +15,12 @@
 package core
 
 import (
+	"bufio"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 var (
@@ -83,4 +86,49 @@ func RemoveTriggerFile() (err error) {
 func TriggerFileExists() bool {
 	_, err := os.Stat(TriggerFile)
 	return err == nil
+}
+
+// ReadLoginDefs reads the login.defs file and returns the values of the specified keys.
+func ReadLoginDefs(keys []string) (map[string]int, error) {
+	path := "/etc/login.defs"
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		path = "/usr/share/defaults/etc/login.defs"
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			return nil, err
+		}
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	vals := make(map[string]int)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.Fields(line)
+		if len(parts) != 2 {
+			continue
+		}
+		for _, key := range keys {
+			if parts[0] == key {
+				val, err := strconv.Atoi(parts[1])
+				if err != nil {
+					return nil, err
+				}
+				vals[key] = val
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return vals, nil
 }
