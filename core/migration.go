@@ -15,13 +15,15 @@
 package core
 
 import (
-	"errors"
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
 	gouser "os/user"
 	"path/filepath"
+	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/DataDrake/waterlog"
@@ -43,9 +45,7 @@ type Migration struct {
 
 // AddSubIds is a type of modification that adds subuids and subgids to a specific set of users
 type AddSubIds struct {
-	GroupName  string `toml:"group"`
-	RangeStart int    `toml:"range-start"`
-	RangeEnd   int    `toml:"range-end"`
+	GroupName string `toml:"group"`
 }
 
 // UpdateUsers is a type of modification that adds a group to a specific set of users
@@ -165,71 +165,86 @@ func (m *Migration) Run(context *Context) {
 }
 
 func (m *Migration) addSubIds(context *Context, task *AddSubIds) {
-	users := context.GetUsersInGroup(task.GroupName)
-	users = append(users, context.GetRootUser())
-
-	m.createSubUidFile(context, task, users)
-	m.createSubGidFile(context, task, users)
-}
-
-func createFileIfNotExists(path string) (bool, error) {
-	fh, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
-
+	keys := []string{
+		"SUB_UID_MIN",
+		"SUB_UID_MAX",
+		"SUB_UID_COUNT",
+		"SUB_GID_MIN",
+		"SUB_GID_MAX",
+		"SUB_GID_COUNT",
+	}
+	loginDefs, err := ReadLoginDefs(keys)
 	if err != nil {
-		if errors.Is(err, os.ErrExist) {
-			waterlog.Debugf("\t%s already exists, skipping", path)
-			// The file already existing isn't an error mode for us,
-			// so don't propagate the error.
-			return false, nil
-		}
-
-		return false, err
-	}
-
-	fh.Close()
-
-	return true, nil
-}
-
-func (m *Migration) createSubUidFile(context *Context, task *AddSubIds, users []User) {
-	created, err := createFileIfNotExists("/etc/subuid")
-
-	if !created {
-		if err != nil {
-			waterlog.Warnf("\tUnable to create /etc/subuid due to error: %s\n", err)
-		}
-
+		waterlog.Warnf("Failed to read login.defs: %s\n", err)
 		return
 	}
 
-	for _, user := range users {
-		if err := context.AddSubUids(&user, task.RangeStart, task.RangeEnd); err != nil {
-			waterlog.Warnf("\tFailed to add subuids to user %s due to error: %s\n", user.Name, err)
-			return
-		}
-
-		waterlog.Debugf("\tSuccessfully added subuids to user %s\n", user.Name)
-	}
+	m.updateSubIds(context, "/etc/subuid", loginDefs["SUB_UID_MIN"], loginDefs["SUB_UID_MAX"], loginDefs["SUB_UID_COUNT"])
+	m.updateSubIds(context, "/etc/subgid", loginDefs["SUB_GID_MIN"], loginDefs["SUB_GID_MAX"], loginDefs["SUB_GID_COUNT"])
 }
 
-func (m *Migration) createSubGidFile(context *Context, task *AddSubIds, users []User) {
-	created, err := createFileIfNotExists("/etc/subgid")
+func (m *Migration) updateSubIds(context *Context, path string, min, max, count int) {
+	existingUsers := make(map[string]bool)
+	maxID := 0
 
-	if !created {
+	if _, err := os.Stat(path); err == nil {
+		file, err := os.Open(path)
 		if err != nil {
-			waterlog.Warnf("\tUnable to create /etc/subgid due to error: %s\n", err)
-		}
-
-		return
-	}
-
-	for _, user := range users {
-		if err := context.AddSubGids(&user, task.RangeStart, task.RangeEnd); err != nil {
-			waterlog.Warnf("\tFailed to add subgids to user %s due to error: %s\n", user.Name, err)
+			waterlog.Warnf("Failed to open %s: %s\n", path, err)
 			return
 		}
+		defer file.Close()
 
-		waterlog.Debugf("\tSuccessfully added subgids to user %s\n", user.Name)
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			parts := strings.Split(scanner.Text(), ":")
+			if len(parts) != 3 {
+				continue
+			}
+			existingUsers[parts[0]] = true
+			start, err := strconv.Atoi(parts[1])
+			if err != nil {
+				continue
+			}
+			length, err := strconv.Atoi(parts[2])
+			if err != nil {
+				continue
+			}
+			if start+length > maxID {
+				maxID = start + length
+			}
+		}
+	}
+
+	if maxID < min {
+		maxID = min
+	}
+
+	users := context.GetUsers()
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Name < users[j].Name
+	})
+
+	for _, user := range users {
+		if _, exists := existingUsers[user.Name]; !exists {
+			if maxID+count > max {
+				waterlog.Warnf("Cannot allocate subuids for user %s, exceeds max\n", user.Name)
+				continue
+			}
+			if path == "/etc/subuid" {
+				if err := context.AddSubUids(&user, maxID, count); err != nil {
+					waterlog.Warnf("Failed to add subuids to user %s due to error: %s\n", user.Name, err)
+					return
+				}
+			} else {
+				if err := context.AddSubGids(&user, maxID, count); err != nil {
+					waterlog.Warnf("Failed to add subgids to user %s due to error: %s\n", user.Name, err)
+					return
+				}
+			}
+			waterlog.Debugf("Added %s to %s with range %d\n", user.Name, path, maxID)
+			maxID += count
+		}
 	}
 }
 

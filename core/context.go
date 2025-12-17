@@ -109,17 +109,27 @@ func (c *Context) GetUsersInGroup(group string) (users []User) {
 	return
 }
 
+// GetUsers returns all users that are not root and are active
+func (c *Context) GetUsers() (users []User) {
+	for _, user := range c.users {
+		if !user.IsRoot && user.IsActive {
+			users = append(users, user)
+		}
+	}
+	return
+}
+
 // AddSubUids adds a range of subids for a user. Returns an error if something went wrong
-func (c *Context) AddSubUids(user *User, rangeStart, rangeEnd int) error {
-	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeEnd)
+func (c *Context) AddSubUids(user *User, rangeStart, rangeCount int) error {
+	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeStart+rangeCount-1)
 	cmd := exec.Command("usermod", "--add-subuids", idRange, user.Name)
 
 	return cmd.Run()
 }
 
 // AddSubGids adds a range of subids for a user. Returns an error if something went wrong
-func (c *Context) AddSubGids(user *User, rangeStart, rangeEnd int) error {
-	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeEnd)
+func (c *Context) AddSubGids(user *User, rangeStart, rangeCount int) error {
+	idRange := fmt.Sprintf("%d-%d", rangeStart, rangeStart+rangeCount-1)
 	cmd := exec.Command("usermod", "--add-subgids", idRange, user.Name)
 
 	return cmd.Run()
